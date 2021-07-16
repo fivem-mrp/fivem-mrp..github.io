@@ -112,8 +112,32 @@ MRP_CLIENT.employment &#x3D; {
             return true;
 
         return false;
+    },
+
+    /**
+     * getEmployment - description    
+     *      
+     * @return {type}  description     
+     */
+    getEmployment() {
+        return currentEmployment;
     }
 };
+
+on(&#x27;onClientResourceStart&#x27;, (name) &#x3D;&gt; {
+    if (name !&#x3D; GetCurrentResourceName())
+        return;
+
+    let char &#x3D; MRP_CLIENT.GetPlayerData();
+    if (char) {
+        //try to get employment
+        MRP_CLIENT.TriggerServerCallback(&#x27;mrp:employment:server:getEmployment&#x27;, char._id, (employment) &#x3D;&gt; {
+            if (employment) {
+                currentEmployment &#x3D; employment;
+            }
+        });
+    }
+});
 
 /**
  * init employment on spawn

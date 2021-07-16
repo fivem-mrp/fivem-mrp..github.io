@@ -143,6 +143,12 @@ onNet(&#x27;mrp:business:server:create&#x27;, (source, doc) &#x3D;&gt; {
             if (r.insertedId) {
                 console.log(&#x60;Created business ${business.name}&#x60;);
                 emit(&#x27;mrp:employment:server:addEmployment&#x27;, source, char.stateId, r.insertedId, config.ownerRole);
+
+                MRP_SERVER.update(&#x27;document&#x27;, {
+                    businessId: r.insertedId
+                }, {
+                    _id: doc._id,
+                }, null, r &#x3D;&gt; {});
             }
         });
     });
@@ -159,13 +165,13 @@ onNet(&#x27;mrp:business:server:approve&#x27;, (source, doc, item) &#x3D;&gt; {
     console.log(&#x60;Approve document ${JSON.stringify(doc)}&#x60;);
     let approver &#x3D; MRP_SERVER.getSpawnedCharacter(source);
 
-    data.approvedBy &#x3D; approver._id;
-    data.approvedAt &#x3D; Date.now();
-    MRP_SERVER.update(&#x27;document&#x27;, data, {
-        _id: data._id
+    doc.approvedBy &#x3D; approver._id;
+    doc.approvedAt &#x3D; Date.now();
+    MRP_SERVER.update(&#x27;document&#x27;, doc, {
+        _id: doc._id
     }, null, (r) &#x3D;&gt; {
         console.log(&#x27;Approved business proposal document&#x27;);
-        emit(&#x27;mrp:inventory:server:RemoveItem&#x27;, &#x27;businessproposal&#x27;, 1, item.slot, {});
+        emit(&#x27;mrp:inventory:server:RemoveItem&#x27;, &#x27;businessproposal&#x27;, 1, item.slot, {}, source);
 
         emit(&#x27;mrp:business:server:create&#x27;, source, doc);
 

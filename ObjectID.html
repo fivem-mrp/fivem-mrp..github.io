@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc 3.6.7">
+  <meta charset="utf-8">
+  <title>Class: ObjectID</title>
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <div class="symbol-detail-labels"><span class="label label-kind">class</span></div>
+            <h1><small></small><span class="symbol-name">ObjectID</span></h1>
+            <p class="source-link">Source: <a href="mrp_phone_html_scripts_objectid.js.html#source-line-28">mrp_phone/<wbr>html/<wbr>scripts/<wbr>objectid.<wbr>js:28</a></p>
+            <div class="symbol-classdesc">
+              <p>Represents the BSON ObjectID type</p>
+            </div>
+            <dl class="dl-compact">
+            </dl>
+          </header>
+          <section id="summary">
+            <div class="summary-callout">
+              <h2 class="summary-callout-heading">Methods</h2>
+              <div class="summary-content">
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="ObjectID.html#.createFromHexString">createFromHexString(hexString)</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#.createFromTime">createFromTime(time)</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#.getMachineID">getMachineID()</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="ObjectID.html#.isValid">isValid(objectid)</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#.setMachineID">setMachineID(machineid)</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#%255Bundefined%255D">[undefined]()</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="ObjectID.html#equals">equals(other)</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#getTimestamp">getTimestamp()</a></dt>
+                    <dd>
+                    </dd>
+                    <dt><a href="ObjectID.html#toHexString">toHexString()</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section>
+            <h2 id="ObjectID">new&nbsp;<span class="symbol-name">ObjectID</span><span class="signature"><span class="signature-params">(arg)</span></span></h2>
+            <p>Create a new immutable ObjectID instance</p>
+            <section>
+              <h3>Parameter</h3>
+              <table class="jsdoc-details-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Optional</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <p>arg</p>
+                    </td>
+                    <td>
+                      <p>(String or Number)</p>
+                    </td>
+                    <td>
+                      <p>&nbsp;</p>
+                    </td>
+                    <td>
+                      <p>Can be a 24 byte hex string, 12 byte binary string or a Number.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <dl class="dl-compact">
+              <dt>Returns</dt>
+              <dd>
+                <p><code>Object</code> instance of ObjectID.</p>
+              </dd>
+            </dl>
+          </section>
+          <section>
+            <h2>Methods</h2>
+            <section>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".createFromHexString"><span class="symbol-name">createFromHexString</span><span class="signature"><span class="signature-params">(hexString)</span>&nbsp;&rarr; <span class="signature-returns"> <a href="ObjectID.html">ObjectID</a></span></span></h3>
+              <p>Creates an ObjectID from a hex string representation of an ObjectID.</p>
+              <section>
+                <h4>Parameter</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>hexString</p>
+                      </td>
+                      <td>
+                        <p>String</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>create a ObjectID from a passed in 24 byte hexstring.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code><a href="ObjectID.html">ObjectID</a></code> return the created ObjectID</p>
+                </dd>
+              </dl>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".createFromTime"><span class="symbol-name">createFromTime</span><span class="signature"><span class="signature-params">(time)</span>&nbsp;&rarr; <span class="signature-returns"> <a href="ObjectID.html">ObjectID</a></span></span></h3>
+              <p>Creates an ObjectID from a second based number, with the rest of the ObjectID zeroed out. Used for comparisons or sorting the ObjectID.</p>
+              <section>
+                <h4>Parameter</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>time</p>
+                      </td>
+                      <td>
+                        <p>Number</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>an integer number representing a number of seconds.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code><a href="ObjectID.html">ObjectID</a></code> return the created ObjectID</p>
+                </dd>
+              </dl>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".getMachineID"><span class="symbol-name">getMachineID</span><span class="signature"><span class="signature-params">()</span>&nbsp;&rarr; <span class="signature-returns"> number</span></span></h3>
+              <p>get the machineID</p>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>number</code> </p>
+                </dd>
+              </dl>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".isValid"><span class="symbol-name">isValid</span><span class="signature"><span class="signature-params">(objectid)</span>&nbsp;&rarr; <span class="signature-returns"> Boolean</span></span></h3>
+              <p>Checks if a value is a valid bson ObjectId</p>
+              <section>
+                <h4>Parameter</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>objectid</p>
+                      </td>
+                      <td>
+                        <p>String</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>Can be a 24 byte hex string or an instance of ObjectID.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>Boolean</code> return true if the value is a valid bson ObjectID, return false otherwise.</p>
+                </dd>
+              </dl>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".setMachineID"><span class="symbol-name">setMachineID</span><span class="signature"><span class="signature-params">(machineid)</span>&nbsp;&rarr; <span class="signature-returns"> void</span></span></h3>
+              <p>set a custom machineID</p>
+              <section>
+                <h4>Parameter</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>machineid</p>
+                      </td>
+                      <td>
+                        <p>(String or Number)</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>Can be a string, hex-string or a number</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>void</code> </p>
+                </dd>
+              </dl>
+              <h3 id="%5Bundefined%5D"><span class="symbol-name">[undefined]</span><span class="signature"><span class="signature-params">()</span>&nbsp;&rarr; <span class="signature-returns"> String</span></span></h3>
+              <p>Converts to a string representation of this Id.</p>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>String</code> return the 24 byte hex string representation.</p>
+                </dd>
+              </dl>
+              <h3 id="equals"><span class="symbol-name">equals</span><span class="signature"><span class="signature-params">(other)</span>&nbsp;&rarr; <span class="signature-returns"> Boolean</span></span></h3>
+              <p>Compares the equality of this ObjectID with <code>otherID</code>.</p>
+              <section>
+                <h4>Parameter</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>other</p>
+                      </td>
+                      <td>
+                        <p>Object</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>ObjectID instance to compare against.</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>Boolean</code> the result of comparing two ObjectID's</p>
+                </dd>
+              </dl>
+              <h3 id="getTimestamp"><span class="symbol-name">getTimestamp</span><span class="signature"><span class="signature-params">()</span>&nbsp;&rarr; <span class="signature-returns"> Date</span></span></h3>
+              <p>Returns the generation date (accurate up to the second) that this ID was generated.</p>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>Date</code> the generation date</p>
+                </dd>
+              </dl>
+              <h3 id="toHexString"><span class="symbol-name">toHexString</span><span class="signature"><span class="signature-params">()</span>&nbsp;&rarr; <span class="signature-returns"> String</span></span></h3>
+              <p>Return the ObjectID id as a 24 byte hex string representation</p>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>String</code> return the 24 byte hex string representation.</p>
+                </dd>
+              </dl>
+            </section>
+          </section>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>

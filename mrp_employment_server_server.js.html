@@ -42,6 +42,37 @@ while (MRP_SERVER &#x3D;&#x3D; null) {
     console.log(&#x27;Waiting for shared object....&#x27;);
 }
 
+function sendEmployment(src, data) {
+    const agg &#x3D; [{
+        &#x27;$match&#x27;: {
+            &#x27;_id&#x27;: data._id
+        }
+    }, {
+        &#x27;$lookup&#x27;: {
+            &#x27;from&#x27;: &#x27;business&#x27;,
+            &#x27;let&#x27;: {
+                &#x27;eid&#x27;: &#x27;$employment.business&#x27;
+            },
+            &#x27;pipeline&#x27;: [{
+                &#x27;$match&#x27;: {
+                    &#x27;$expr&#x27;: {
+                        &#x27;$in&#x27;: [
+                            &#x27;$_id&#x27;, &#x27;$$eid&#x27;
+                        ]
+                    }
+                }
+            }],
+            &#x27;as&#x27;: &#x27;businessRefs&#x27;
+        }
+    }];
+
+    MRP_SERVER.aggregate(&#x27;employment&#x27;, agg, (employment) &#x3D;&gt; {
+        if (employment &amp;amp;&amp;amp; employment.length &gt; 0) {
+            emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, employment[0]);
+        }
+    });
+}
+
 /**
  * need to have module mrp_employment loaded
  * 
@@ -166,7 +197,7 @@ MRP_SERVER.employment &#x3D; {
                                     ]
                                 });
 
-                                emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, data);
+                                sendEmployment(src, data);
                             }
                         }
                     });
@@ -269,7 +300,7 @@ MRP_SERVER.employment &#x3D; {
                                     ]
                                 });
 
-                                emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, data);
+                                sendEmployment(src, data);
                             }
                         }
                     });
@@ -310,10 +341,33 @@ RegisterCommand(&#x27;bl&#x27;, (source, args) &#x3D;&gt; {
  * @property {ID} charId      character ID to get data for
  */
 onNet(&#x27;mrp:employment:server:getEmployment&#x27;, (source, charId, uuid) &#x3D;&gt; {
-    MRP_SERVER.read(&#x27;employment&#x27;, {
-        char: charId
-    }, (result) &#x3D;&gt; {
-        emitNet(&#x27;mrp:employment:server:getEmployment:response&#x27;, source, result, uuid);
+    const agg &#x3D; [{
+        &#x27;$match&#x27;: {
+            &#x27;char&#x27;: charId
+        }
+    }, {
+        &#x27;$lookup&#x27;: {
+            &#x27;from&#x27;: &#x27;business&#x27;,
+            &#x27;let&#x27;: {
+                &#x27;eid&#x27;: &#x27;$employment.business&#x27;
+            },
+            &#x27;pipeline&#x27;: [{
+                &#x27;$match&#x27;: {
+                    &#x27;$expr&#x27;: {
+                        &#x27;$in&#x27;: [
+                            &#x27;$_id&#x27;, &#x27;$$eid&#x27;
+                        ]
+                    }
+                }
+            }],
+            &#x27;as&#x27;: &#x27;businessRefs&#x27;
+        }
+    }];
+
+    MRP_SERVER.aggregate(&#x27;employment&#x27;, agg, (result) &#x3D;&gt; {
+        if (result &amp;amp;&amp;amp; result.length &gt; 0) {
+            emitNet(&#x27;mrp:employment:server:getEmployment:response&#x27;, source, result[0], uuid);
+        }
     });
 });
 
