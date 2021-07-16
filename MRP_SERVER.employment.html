@@ -4,7 +4,7 @@
 <head>
   <meta name="generator" content="JSDoc 3.6.7">
   <meta charset="utf-8">
-  <title>Namespace: utils</title>
+  <title>Namespace: employment</title>
   <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
   <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
   <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
@@ -24,10 +24,11 @@
       <div id="jsdoc-content-container">
         <div id="jsdoc-main" role="main">
           <header class="page-header">
-            <div class="symbol-detail-labels"><span class="label label-kind">namespace</span></div>
-            <h1><small></small><span class="symbol-name">utils</span></h1>
-            <p class="source-link">Source: <a href="mrp_core_client_helpers.js.html">mrp_core/<wbr>client/<wbr>helpers.<wbr>js</a></p>
+            <div class="symbol-detail-labels"><span class="label label-kind">namespace</span>&nbsp;<span class="label label-static">static</span></div>
+            <h1><small><a href="MRP_SERVER.html">MRP_SERVER</a>.<wbr></small><span class="symbol-name">employment</span></h1>
+            <p class="source-link">Source: <a href="mrp_employment_server_server.js.html#source-line-14">mrp_employment/<wbr>server/<wbr>server.<wbr>js:14</a></p>
             <div class="symbol-description">
+              <p>need to have module mrp_employment loaded</p>
             </div>
             <dl class="dl-compact">
             </dl>
@@ -38,33 +39,21 @@
               <div class="summary-content">
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
-                    <dt><a href="utils.html#.CreateThread">CreateThread(callback)</a></dt>
-                    <dd>
-                    </dd>
-                    <dt><a href="utils.html#.getAllPlayersInVehicle">getAllPlayersInVehicle(vehicle)</a></dt>
-                    <dd>
-                    </dd>
-                    <dt><a href="utils.html#.getRandomInt">getRandomInt(min, max)</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#.addEmployment">addEmployment(source, stateId, businessId, jobName)</a></dt>
                     <dd>
                     </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
-                    <dt><a href="utils.html#.InvokeNative">InvokeNative()</a></dt>
-                    <dd>
-                    </dd>
-                    <dt><a href="utils.html#.isObjectIDEqual">isObjectIDEqual(id1, id2)</a></dt>
-                    <dd>
-                    </dd>
-                    <dt><a href="utils.html#.sleep">sleep(ms)</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#.findEmployement">findEmployement(data, business, role)</a></dt>
                     <dd>
                     </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
-                    <dt><a href="utils.html#.wait">wait(ms)</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#.removeEmployment">removeEmployment(source, stateId, businessId, jobName)</a></dt>
                     <dd>
                     </dd>
                   </dl>
@@ -76,96 +65,8 @@
             <h2>Methods</h2>
             <section>
               <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".CreateThread"><span class="symbol-name">CreateThread</span><span class="signature"><span class="signature-params">(callback)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>CreateThread - description<br>
-                Example with infinite while cycle:
-                MRP_CLIENT.CreateThread(()=&gt;{
-                let cycle = async function(){
-                let x = 0;
-                while(true){
-                x++;
-                print(x);
-                await MRP_CLIENT.sleep(2000);
-                }
-                }
-                cycle();
-                });</p>
-              <section>
-                <h4>Parameter</h4>
-                <table class="jsdoc-details-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Optional</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <p>callback</p>
-                      </td>
-                      <td>
-                        <p>type</p>
-                      </td>
-                      <td>
-                        <p>&nbsp;</p>
-                      </td>
-                      <td>
-                        <p>description</p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-              <dl class="dl-compact">
-                <dt>Returns</dt>
-                <dd>
-                  <p><code>type</code> description</p>
-                </dd>
-              </dl>
-              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".getAllPlayersInVehicle"><span class="symbol-name">getAllPlayersInVehicle</span><span class="signature"><span class="signature-params">(vehicle)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>getAllPlayersInVehicle - description</p>
-              <section>
-                <h4>Parameter</h4>
-                <table class="jsdoc-details-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Optional</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <p>vehicle</p>
-                      </td>
-                      <td>
-                        <p>type</p>
-                      </td>
-                      <td>
-                        <p>&nbsp;</p>
-                      </td>
-                      <td>
-                        <p>description</p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
-              <dl class="dl-compact">
-                <dt>Returns</dt>
-                <dd>
-                  <p><code>type</code> description</p>
-                </dd>
-              </dl>
-              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".getRandomInt"><span class="symbol-name">getRandomInt</span><span class="signature"><span class="signature-params">(min, max)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>getRandomInt - description</p>
+              <h3 id=".addEmployment"><span class="symbol-name">addEmployment</span><span class="signature"><span class="signature-params">(source, stateId, businessId, jobName)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
+              <p>addEmployment - description</p>
               <section>
                 <h4>Parameters</h4>
                 <table class="jsdoc-details-table">
@@ -180,7 +81,7 @@
                   <tbody>
                     <tr>
                       <td>
-                        <p>min</p>
+                        <p>source</p>
                       </td>
                       <td>
                         <p>type</p>
@@ -194,7 +95,35 @@
                     </tr>
                     <tr>
                       <td>
-                        <p>max</p>
+                        <p>stateId</p>
+                      </td>
+                      <td>
+                        <p>type</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>description</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>businessId</p>
+                      </td>
+                      <td>
+                        <p>type</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>description</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>jobName</p>
                       </td>
                       <td>
                         <p>type</p>
@@ -216,17 +145,8 @@
                 </dd>
               </dl>
               <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".InvokeNative"><span class="symbol-name">InvokeNative</span><span class="signature"><span class="signature-params">()</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>InvokeNative - description</p>
-              <dl class="dl-compact">
-                <dt>Returns</dt>
-                <dd>
-                  <p><code>type</code> description</p>
-                </dd>
-              </dl>
-              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".isObjectIDEqual"><span class="symbol-name">isObjectIDEqual</span><span class="signature"><span class="signature-params">(id1, id2)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>isObjectIDEqual - description</p>
+              <h3 id=".findEmployement"><span class="symbol-name">findEmployement</span><span class="signature"><span class="signature-params">(data, business, role)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
+              <p>findEmployement - description</p>
               <section>
                 <h4>Parameters</h4>
                 <table class="jsdoc-details-table">
@@ -241,7 +161,7 @@
                   <tbody>
                     <tr>
                       <td>
-                        <p>id1</p>
+                        <p>data</p>
                       </td>
                       <td>
                         <p>type</p>
@@ -255,7 +175,7 @@
                     </tr>
                     <tr>
                       <td>
-                        <p>id2</p>
+                        <p>business</p>
                       </td>
                       <td>
                         <p>type</p>
@@ -267,33 +187,9 @@
                         <p>description</p>
                       </td>
                     </tr>
-                  </tbody>
-                </table>
-              </section>
-              <dl class="dl-compact">
-                <dt>Returns</dt>
-                <dd>
-                  <p><code>type</code> description</p>
-                </dd>
-              </dl>
-              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".sleep"><span class="symbol-name">sleep</span><span class="signature"><span class="signature-params">(ms)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>sleep - description</p>
-              <section>
-                <h4>Parameter</h4>
-                <table class="jsdoc-details-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Optional</th>
-                      <th>Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
                     <tr>
                       <td>
-                        <p>ms</p>
+                        <p>role</p>
                       </td>
                       <td>
                         <p>type</p>
@@ -315,10 +211,10 @@
                 </dd>
               </dl>
               <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".wait"><span class="symbol-name">wait</span><span class="signature"><span class="signature-params">(ms)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
-              <p>wait - description</p>
+              <h3 id=".removeEmployment"><span class="symbol-name">removeEmployment</span><span class="signature"><span class="signature-params">(source, stateId, businessId, jobName)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
+              <p>removeEmployment - description</p>
               <section>
-                <h4>Parameter</h4>
+                <h4>Parameters</h4>
                 <table class="jsdoc-details-table">
                   <thead>
                     <tr>
@@ -331,7 +227,49 @@
                   <tbody>
                     <tr>
                       <td>
-                        <p>ms</p>
+                        <p>source</p>
+                      </td>
+                      <td>
+                        <p>type</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>description</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>stateId</p>
+                      </td>
+                      <td>
+                        <p>type</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>description</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>businessId</p>
+                      </td>
+                      <td>
+                        <p>type</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>description</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>jobName</p>
                       </td>
                       <td>
                         <p>type</p>

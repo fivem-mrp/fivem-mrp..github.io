@@ -2,11 +2,13 @@
 <html>
 
 <head>
-  <meta name="generator" content="JSDoc ">
+  <meta name="generator" content="JSDoc 3.6.7">
   <meta charset="utf-8">
   <title>Source: mrp_core/client/helpers.js</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Karla:400,400i,700,700i|Noto+Serif:400,400i,700,700i&display=swap&subset=latin-ext">
-  <link rel="stylesheet" href="css/baseline.css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
 </head>
 
 <body onload="prettyPrint()">
@@ -30,7 +32,7 @@
             <pre class="prettyprint linenums"><code>/**
  * @namespace utils
  */
-utils = {
+utils &#x3D; {
 
     /**    
      * InvokeNative - description    
@@ -39,9 +41,9 @@ utils = {
      * @return {type}  description     
      */
     InvokeNative: function() {
-        let args = arguments;
-        return new Promise(resolve =&gt; {
-            emit(&#39;mrp:lua:invokeNative&#39;, args, (returnVal) =&gt; {
+        let args &#x3D; arguments;
+        return new Promise(resolve &#x3D;&gt; {
+            emit(&#x27;mrp:lua:invokeNative&#x27;, args, (returnVal) &#x3D;&gt; {
                 resolve(returnVal);
             });
         });
@@ -50,9 +52,9 @@ utils = {
     /**     
      * CreateThread - description    
      * Example with infinite while cycle:
-     * MRP_CLIENT.CreateThread(()=&gt;{
-     *      let cycle = async function(){
-     *          let x = 0;
+     * MRP_CLIENT.CreateThread(()&#x3D;&gt;{
+     *      let cycle &#x3D; async function(){
+     *          let x &#x3D; 0;
      *          while(true){
      *              x++;
      *              print(x);
@@ -67,7 +69,7 @@ utils = {
      * @return {type}          description     
      */
     CreateThread: function(callback) {
-        emit(&#39;mrp:lua:createThread&#39;, callback);
+        emit(&#x27;mrp:lua:createThread&#x27;, callback);
     },
 
     /**    
@@ -78,7 +80,7 @@ utils = {
      * @return {type}    description     
      */
     sleep: function(ms) {
-        return new Promise((resolve) =&gt; {
+        return new Promise((resolve) &#x3D;&gt; {
             setTimeout(resolve, ms);
         });
     },
@@ -91,8 +93,8 @@ utils = {
      * @return {type}    description     
      */
     wait: function(ms) {
-        return new Promise((resolve) =&gt; {
-            emit(&#39;mrp:lua:wait&#39;, ms, () =&gt; {
+        return new Promise((resolve) &#x3D;&gt; {
+            emit(&#x27;mrp:lua:wait&#x27;, ms, () &#x3D;&gt; {
                 resolve();
             });
         });
@@ -107,8 +109,8 @@ utils = {
      * @return {type}     description     
      */
     getRandomInt: function(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
+        min &#x3D; Math.ceil(min);
+        max &#x3D; Math.floor(max);
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
 
@@ -120,20 +122,20 @@ utils = {
      * @return {type}         description     
      */
     getAllPlayersInVehicle: function(vehicle) {
-        let seatCount = GetVehicleMaxNumberOfPassengers(vehicle);
-        let players = [];
-        for (let i = 0; i &lt; seatCount; i++) {
-            let seatFree = IsVehicleSeatFree(vehicle, i);
-            let pedInSeat = GetPedInVehicleSeat(vehicle, i);
-            let pid = NetworkGetPlayerIndexFromPed(pedInSeat);
-            let playerServerId = GetPlayerServerId(pid);
+        let seatCount &#x3D; GetVehicleMaxNumberOfPassengers(vehicle);
+        let players &#x3D; [];
+        for (let i &#x3D; 0; i &amp;lt; seatCount; i++) {
+            let seatFree &#x3D; IsVehicleSeatFree(vehicle, i);
+            let pedInSeat &#x3D; GetPedInVehicleSeat(vehicle, i);
+            let pid &#x3D; NetworkGetPlayerIndexFromPed(pedInSeat);
+            let playerServerId &#x3D; GetPlayerServerId(pid);
             players.push(playerServerId);
         }
 
         if (!IsVehicleSeatFree(vehicle, -1)) {
-            let pedInSeat = GetPedInVehicleSeat(vehicle, -1);
-            let pid = NetworkGetPlayerIndexFromPed(pedInSeat);
-            let playerServerId = GetPlayerServerId(pid);
+            let pedInSeat &#x3D; GetPedInVehicleSeat(vehicle, -1);
+            let pid &#x3D; NetworkGetPlayerIndexFromPed(pedInSeat);
+            let playerServerId &#x3D; GetPlayerServerId(pid);
             players.push(playerServerId);
         }
 
@@ -152,21 +154,21 @@ utils = {
         if (!id1 || !id2 || !id1.id || !id2.id)
             return false;
 
-        let bufferArr = [];
+        let bufferArr &#x3D; [];
         for (let i in id1.id) {
             bufferArr.push(id1.id[i]);
         }
 
-        let idHash1 = Buffer.from(bufferArr).toString();
+        let idHash1 &#x3D; Buffer.from(bufferArr).toString();
 
-        bufferArr = [];
+        bufferArr &#x3D; [];
         for (let i in id2.id) {
             bufferArr.push(id2.id[i]);
         }
 
-        let idHash2 = Buffer.from(bufferArr).toString();
+        let idHash2 &#x3D; Buffer.from(bufferArr).toString();
 
-        if (idHash1 == idHash2)
+        if (idHash1 &#x3D;&#x3D; idHash2)
             return true;
 
         return false;
@@ -181,7 +183,7 @@ utils = {
   <footer id="jsdoc-footer" class="jsdoc-footer">
     <div id="jsdoc-footer-container">
       <p>
-        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> on July 16, 2021.
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
       </p>
     </div>
   </footer>

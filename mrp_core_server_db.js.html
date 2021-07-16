@@ -2,11 +2,13 @@
 <html>
 
 <head>
-  <meta name="generator" content="JSDoc ">
+  <meta name="generator" content="JSDoc 3.6.7">
   <meta charset="utf-8">
   <title>Source: mrp_core/server/db.js</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Karla:400,400i,700,700i|Noto+Serif:400,400i,700,700i&display=swap&subset=latin-ext">
-  <link rel="stylesheet" href="css/baseline.css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
 </head>
 
 <body onload="prettyPrint()">
@@ -27,35 +29,35 @@
             <h1>Source: mrp_core/server/db.js</h1>
           </header>
           <article>
-            <pre class="prettyprint linenums"><code>const config = require(&#39;../config/default.json&#39;);
+            <pre class="prettyprint linenums"><code>const config &#x3D; require(&#x27;../config/default.json&#x27;);
 
-const MongoClient = require(&#39;mongodb&#39;).MongoClient;
-const Timestamp = require(&#39;mongodb&#39;).Timestamp;
-const ObjectID = require(&#39;mongodb&#39;).ObjectID;
-require(&#39;../shared/debug.js&#39;);
-const logger = mrp_logger;
-const BSON = require(&#39;bson&#39;);
-const bson = new BSON();
+const MongoClient &#x3D; require(&#x27;mongodb&#x27;).MongoClient;
+const Timestamp &#x3D; require(&#x27;mongodb&#x27;).Timestamp;
+const ObjectID &#x3D; require(&#x27;mongodb&#x27;).ObjectID;
+require(&#x27;../shared/debug.js&#x27;);
+const logger &#x3D; mrp_logger;
+const BSON &#x3D; require(&#x27;bson&#x27;);
+const bson &#x3D; new BSON();
 
 // Connection URL
-const url = config.DB.url;
+const url &#x3D; config.DB.url;
 
 // Database Name
-const dbName = config.DB.name;
-const client = new MongoClient(url, {
+const dbName &#x3D; config.DB.name;
+const client &#x3D; new MongoClient(url, {
     useUnifiedTopology: true
 });
 
 //new default character starts
-const DEFAULT_HEALTH = config.newCharacter.health;
-const DEFAULT_ARMOR = config.newCharacter.armor;
-const DEFAULT_HUNGER = config.newCharacter.hunger;
-const DEFAULT_THIRST = config.newCharacter.thirst;
-const DEFAULT_CASH = config.newCharacter.cash;
-const DEFAULT_BANK = config.newCharacter.bank;
-const DEFAULT_STRESS = config.newCharacter.stress;
+const DEFAULT_HEALTH &#x3D; config.newCharacter.health;
+const DEFAULT_ARMOR &#x3D; config.newCharacter.armor;
+const DEFAULT_HUNGER &#x3D; config.newCharacter.hunger;
+const DEFAULT_THIRST &#x3D; config.newCharacter.thirst;
+const DEFAULT_CASH &#x3D; config.newCharacter.cash;
+const DEFAULT_BANK &#x3D; config.newCharacter.bank;
+const DEFAULT_STRESS &#x3D; config.newCharacter.stress;
 
-let exportObj = {
+let exportObj &#x3D; {
     test: &quot;test&quot;
 };
 
@@ -69,14 +71,14 @@ let db;
  * @param  {type} source description 
  * @return {type}        description 
  */
-MRP.getPlayer = async function(source) {
+MRP.getPlayer &#x3D; async function(source) {
     if (!db)
         return null;
 
-    const collection = db.collection(&#39;user&#39;);
+    const collection &#x3D; db.collection(&#x27;user&#x27;);
 
-    let id = MRP.getUserId(source);
-    let storedUser = await collection.findOne({
+    let id &#x3D; MRP.getUserId(source);
+    let storedUser &#x3D; await collection.findOne({
         _id: id
     });
     return storedUser;
@@ -91,26 +93,26 @@ MRP.getPlayer = async function(source) {
  * @param  {type} char   description 
  * @return {type}        description 
  */
-MRP.setLastUsedCharacter = async function(source, char) {
+MRP.setLastUsedCharacter &#x3D; async function(source, char) {
     if (!db)
         return null;
 
-    let player = await MRP.getPlayer(source);
-    player.lastCharacter = char._id;
+    let player &#x3D; await MRP.getPlayer(source);
+    player.lastCharacter &#x3D; char._id;
 
-    const collection = db.collection(&#39;user&#39;);
+    const collection &#x3D; db.collection(&#x27;user&#x27;);
 
-    let query = {
+    let query &#x3D; {
         _id: player._id
     };
-    let options = {
+    let options &#x3D; {
         upsert: true
     };
-    const result = await collection.updateOne(query, {
+    const result &#x3D; await collection.updateOne(query, {
         $set: player
     }, options);
 
-    logger.log(`Last character used operation count ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+    logger.log(&#x60;Last character used operation count ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)&#x60;);
 
     return player;
 }
@@ -123,14 +125,14 @@ MRP.setLastUsedCharacter = async function(source, char) {
  * @param  {type} source description 
  * @return {type}        description 
  */
-MRP.getCharacters = async function(source) {
+MRP.getCharacters &#x3D; async function(source) {
     if (!db)
         return null;
 
-    const collection = db.collection(&#39;character&#39;);
+    const collection &#x3D; db.collection(&#x27;character&#x27;);
 
-    let id = MRP.getUserId(source);
-    let cursor = await collection.find({
+    let id &#x3D; MRP.getUserId(source);
+    let cursor &#x3D; await collection.find({
         owner: id
     }, {
         sort: {
@@ -138,11 +140,11 @@ MRP.getCharacters = async function(source) {
         }
     });
 
-    let chars = [];
-    if ((await cursor.count()) === 0) {
-        logger.log(&#39;No characters found!&#39;);
+    let chars &#x3D; [];
+    if ((await cursor.count()) &#x3D;&#x3D;&#x3D; 0) {
+        logger.log(&#x27;No characters found!&#x27;);
     } else {
-        chars = cursor.toArray();
+        chars &#x3D; cursor.toArray();
     }
 
     return chars;
@@ -156,15 +158,15 @@ MRP.getCharacters = async function(source) {
  * @param  {type} obj description 
  * @return {type}     description 
  */
-MRP.toObjectId = function(obj) {
-    let arrayBuffer = [];
+MRP.toObjectId &#x3D; function(obj) {
+    let arrayBuffer &#x3D; [];
     for (let i in obj) {
         arrayBuffer.push(obj[i]);
     }
 
-    let buf = Buffer.from(arrayBuffer);
+    let buf &#x3D; Buffer.from(arrayBuffer);
 
-    let objId = new ObjectID(buf);
+    let objId &#x3D; new ObjectID(buf);
 
     return objId;
 };
@@ -177,7 +179,7 @@ MRP.toObjectId = function(obj) {
  * @param  {type} obj description 
  * @return {type}     description 
  */
-MRP.toMongoTimestamp = function(obj) {
+MRP.toMongoTimestamp &#x3D; function(obj) {
     return Timestamp.fromBits(obj.low_, obj.high_);
 }
 
@@ -189,18 +191,18 @@ MRP.toMongoTimestamp = function(obj) {
  * @param  {type} id description 
  * @return {type}    description 
  */
-MRP.deleteCharacter = async function(id) {
-    const collection = db.collection(&#39;character&#39;);
+MRP.deleteCharacter &#x3D; async function(id) {
+    const collection &#x3D; db.collection(&#x27;character&#x27;);
 
-    let objId = id;
+    let objId &#x3D; id;
     if (id.id)
-        objId = MRP.toObjectId(id.id);
+        objId &#x3D; MRP.toObjectId(id.id);
 
-    const result = await collection.deleteOne({
+    const result &#x3D; await collection.deleteOne({
         _id: objId
     });
 
-    logger.log(`Deleted character count ${result.modifiedCount}`);
+    logger.log(&#x60;Deleted character count ${result.modifiedCount}&#x60;);
 }
 
 
@@ -213,31 +215,31 @@ MRP.deleteCharacter = async function(id) {
  * @param  {type} cb        description 
  * @return {type}           description 
  */
-MRP.createCharacter = function(player, inputChar, cb) {
+MRP.createCharacter &#x3D; function(player, inputChar, cb) {
     if (!player || !inputChar)
         return;
 
-    const collection = db.collection(&#39;character&#39;);
+    const collection &#x3D; db.collection(&#x27;character&#x27;);
 
-    const create = async function() {
-        let birthDate = inputChar.birthday ? new Date(inputChar.birthday).getTime() : Date.now();
+    const create &#x3D; async function() {
+        let birthDate &#x3D; inputChar.birthday ? new Date(inputChar.birthday).getTime() : Date.now();
 
-        const agg = [{
-            &#39;$group&#39;: {
-                &#39;_id&#39;: &#39;$item&#39;,
-                &#39;maxStateId&#39;: {
-                    &#39;$max&#39;: &#39;$stateId&#39;
+        const agg &#x3D; [{
+            &#x27;$group&#x27;: {
+                &#x27;_id&#x27;: &#x27;$item&#x27;,
+                &#x27;maxStateId&#x27;: {
+                    &#x27;$max&#x27;: &#x27;$stateId&#x27;
                 }
             }
         }];
         //aggreage max state ids to generate a new one
-        const cursor = await collection.aggregate(agg);
-        let maxId = await cursor.toArray();
-        let stateId = 1;
-        if (maxId &amp;&amp; maxId.length &gt; 0 &amp;&amp; maxId[0].maxStateId) {
-            stateId += maxId[0].maxStateId;
+        const cursor &#x3D; await collection.aggregate(agg);
+        let maxId &#x3D; await cursor.toArray();
+        let stateId &#x3D; 1;
+        if (maxId &amp;amp;&amp;amp; maxId.length &gt; 0 &amp;amp;&amp;amp; maxId[0].maxStateId) {
+            stateId +&#x3D; maxId[0].maxStateId;
         }
-        const result = await collection.insertOne({
+        const result &#x3D; await collection.insertOne({
             name: inputChar.name,
             surname: inputChar.surname,
             stats: {
@@ -254,11 +256,11 @@ MRP.createCharacter = function(player, inputChar, cb) {
             stateId: stateId,
             sex: inputChar.sex || &quot;MALE&quot;,
             birthday: Timestamp.fromNumber(birthDate),
-            model: (inputChar.sex == &quot;FEMALE&quot;) ? &quot;mp_f_freemode_01&quot; : &quot;mp_m_freemode_01&quot;,
+            model: (inputChar.sex &#x3D;&#x3D; &quot;FEMALE&quot;) ? &quot;mp_f_freemode_01&quot; : &quot;mp_m_freemode_01&quot;,
             owner: player._id
         }, cb);
 
-        logger.log(`mrp:createCharacter [${inputChar.name} ${inputChar.surname}] created`);
+        logger.log(&#x60;mrp:createCharacter [${inputChar.name} ${inputChar.surname}] created&#x60;);
     }
 
     create();
@@ -273,7 +275,7 @@ MRP.createCharacter = function(player, inputChar, cb) {
  * @param  {type} id             description 
  * @return {type}                description 
  */
-MRP.delete = async function(collectionName, id) {
+MRP.delete &#x3D; async function(collectionName, id) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -283,17 +285,17 @@ MRP.delete = async function(collectionName, id) {
         return;
     }
 
-    const collection = db.collection(collectionName);
+    const collection &#x3D; db.collection(collectionName);
 
-    let objId = id;
+    let objId &#x3D; id;
     if (id.id)
-        objId = MRP.toObjectId(id.id);
+        objId &#x3D; MRP.toObjectId(id.id);
 
-    const result = await collection.deleteOne({
+    const result &#x3D; await collection.deleteOne({
         _id: objId
     });
 
-    logger.log(`Deleted ${collectionName} count ${result.modifiedCount}`);
+    logger.log(&#x60;Deleted ${collectionName} count ${result.modifiedCount}&#x60;);
 };
 
 
@@ -305,7 +307,7 @@ MRP.delete = async function(collectionName, id) {
  * @param  {type} q              description 
  * @return {type}                description 
  */
-MRP.deleteQuery = function(collectionName, q) {
+MRP.deleteQuery &#x3D; function(collectionName, q) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -315,12 +317,12 @@ MRP.deleteQuery = function(collectionName, q) {
         return;
     }
 
-    const collection = db.collection(collectionName);
+    const collection &#x3D; db.collection(collectionName);
 
     normalizeIDs(q)
-    const result = collection.deleteOne(q);
+    const result &#x3D; collection.deleteOne(q);
 
-    logger.log(`Deleted ${collectionName} count ${result.modifiedCount}`);
+    logger.log(&#x60;Deleted ${collectionName} count ${result.modifiedCount}&#x60;);
 };
 
 
@@ -333,7 +335,7 @@ MRP.deleteQuery = function(collectionName, q) {
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.create = function(collectionName, obj, cb) {
+MRP.create &#x3D; function(collectionName, obj, cb) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -343,14 +345,14 @@ MRP.create = function(collectionName, obj, cb) {
         return;
     }
 
-    const collection = db.collection(collectionName);
+    const collection &#x3D; db.collection(collectionName);
 
     normalizeIDs(obj);
 
-    const create = async function() {
-        const result = await collection.insertOne(obj);
+    const create &#x3D; async function() {
+        const result &#x3D; await collection.insertOne(obj);
 
-        logger.log(`[${collectionName}] created`);
+        logger.log(&#x60;[${collectionName}] created&#x60;);
 
         if (result)
             cb(result);
@@ -359,7 +361,7 @@ MRP.create = function(collectionName, obj, cb) {
     create();
 };
 
-let stashedCalls = [];
+let stashedCalls &#x3D; [];
 
 
 /**
@@ -373,7 +375,7 @@ let stashedCalls = [];
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.update = function(collectionName, obj, q, opt, cb) {
+MRP.update &#x3D; function(collectionName, obj, q, opt, cb) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -384,40 +386,40 @@ MRP.update = function(collectionName, obj, q, opt, cb) {
     }
 
 
-    const collection = db.collection(collectionName);
+    const collection &#x3D; db.collection(collectionName);
 
     normalizeIDs(q);
     normalizeIDs(obj);
 
-    const create = async function() {
-        let query = {};
+    const create &#x3D; async function() {
+        let query &#x3D; {};
         if (q) {
-            query = q;
+            query &#x3D; q;
         } else {
             if (obj._id)
-                query._id = obj._id;
+                query._id &#x3D; obj._id;
         }
 
         let options;
         if (opt) {
-            options = opt;
+            options &#x3D; opt;
         } else {
-            options = {
+            options &#x3D; {
                 upsert: true
             };
         }
 
-        let toUpdate = {
+        let toUpdate &#x3D; {
             $set: obj
         };
 
         if (obj.$set || obj.$pull) {
-            toUpdate = obj
+            toUpdate &#x3D; obj
         }
 
-        const result = await collection.updateOne(query, toUpdate, options);
+        const result &#x3D; await collection.updateOne(query, toUpdate, options);
 
-        logger.log(`[${collectionName}] updated`);
+        logger.log(&#x60;[${collectionName}] updated&#x60;);
         if (cb)
             cb(result);
     }
@@ -435,7 +437,7 @@ MRP.update = function(collectionName, obj, q, opt, cb) {
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.read = function(collectionName, query, cb) {
+MRP.read &#x3D; function(collectionName, query, cb) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -445,11 +447,11 @@ MRP.read = function(collectionName, query, cb) {
         return;
     }
 
-    const collection = db.collection(collectionName);
+    const collection &#x3D; db.collection(collectionName);
 
-    let read = async () =&gt; {
+    let read &#x3D; async () &#x3D;&gt; {
         normalizeIDs(query);
-        let storedDocument = await collection.findOne(query);
+        let storedDocument &#x3D; await collection.findOne(query);
         cb(storedDocument);
     };
     read();
@@ -467,11 +469,11 @@ MRP.read = function(collectionName, query, cb) {
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.find = function(collectionName, query, options, paging, cb) {
+MRP.find &#x3D; function(collectionName, query, options, paging, cb) {
     if (Array.isArray(query))
-        query = undefined;
+        query &#x3D; undefined;
     if (Array.isArray(options))
-        options = undefined;
+        options &#x3D; undefined;
 
     if (!db) {
         //DB not connected stash changes
@@ -482,22 +484,22 @@ MRP.find = function(collectionName, query, options, paging, cb) {
         return;
     }
 
-    const collection = db.collection(collectionName);
-    let find = async () =&gt; {
+    const collection &#x3D; db.collection(collectionName);
+    let find &#x3D; async () &#x3D;&gt; {
         normalizeIDs(query);
-        const cursor = await collection.find(query, options);
-        if ((await cursor.count()) === 0) {
-            logger.log(`No documents found for collection [${collectionName}] with query [${JSON.stringify(query)}] and options [${JSON.stringify(options)}]`);
+        const cursor &#x3D; await collection.find(query, options);
+        if ((await cursor.count()) &#x3D;&#x3D;&#x3D; 0) {
+            logger.log(&#x60;No documents found for collection [${collectionName}] with query [${JSON.stringify(query)}] and options [${JSON.stringify(options)}]&#x60;);
             cb(null);
             return;
         }
 
-        if (paging &amp;&amp; paging.skip !== false)
+        if (paging &amp;amp;&amp;amp; paging.skip !&#x3D;&#x3D; false)
             cursor.skip(paging.skip);
-        if (paging &amp;&amp; paging.limit !== false)
+        if (paging &amp;amp;&amp;amp; paging.limit !&#x3D;&#x3D; false)
             cursor.limit(paging.limit);
 
-        let documents = await cursor.toArray();
+        let documents &#x3D; await cursor.toArray();
         cb(documents);
     };
     find();
@@ -513,7 +515,7 @@ MRP.find = function(collectionName, query, options, paging, cb) {
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.aggregate = function(collectionName, query, cb) {
+MRP.aggregate &#x3D; function(collectionName, query, cb) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -523,12 +525,12 @@ MRP.aggregate = function(collectionName, query, cb) {
         return;
     }
 
-    const collection = db.collection(collectionName);
-    let find = async () =&gt; {
+    const collection &#x3D; db.collection(collectionName);
+    let find &#x3D; async () &#x3D;&gt; {
         normalizeIDs(query);
-        const cursor = await collection.aggregate(query);
+        const cursor &#x3D; await collection.aggregate(query);
 
-        let documents = await cursor.toArray();
+        let documents &#x3D; await cursor.toArray();
 
         cb(documents);
     };
@@ -545,7 +547,7 @@ MRP.aggregate = function(collectionName, query, cb) {
  * @param  {type} cb             description 
  * @return {type}                description 
  */
-MRP.count = function(collectionName, query, cb) {
+MRP.count &#x3D; function(collectionName, query, cb) {
     if (!db) {
         //DB not connected stash changes
         stashedCalls.push({
@@ -555,16 +557,16 @@ MRP.count = function(collectionName, query, cb) {
         return;
     }
 
-    const collection = db.collection(collectionName);
-    let count = async () =&gt; {
+    const collection &#x3D; db.collection(collectionName);
+    let count &#x3D; async () &#x3D;&gt; {
         normalizeIDs(query);
-        const count = await collection.countDocuments(query);
+        const count &#x3D; await collection.countDocuments(query);
         cb(count);
     };
     count();
 };
 
-let normalizeIDs = (obj) =&gt; {
+let normalizeIDs &#x3D; (obj) &#x3D;&gt; {
     if (!obj)
         return;
 
@@ -573,9 +575,9 @@ let normalizeIDs = (obj) =&gt; {
             for (let i in obj[k]) {
                 normalizeIDs(obj[k][i]);
             }
-        } else if (typeof obj[k] == &#39;object&#39;) {
-            if (obj[k]._bsontype &amp;&amp; obj[k]._bsontype == &quot;ObjectID&quot;) {
-                obj[k] = MRP.toObjectId(obj[k].id);
+        } else if (typeof obj[k] &#x3D;&#x3D; &#x27;object&#x27;) {
+            if (obj[k]._bsontype &amp;amp;&amp;amp; obj[k]._bsontype &#x3D;&#x3D; &quot;ObjectID&quot;) {
+                obj[k] &#x3D; MRP.toObjectId(obj[k].id);
             } else {
                 normalizeIDs(obj[k]);
             }
@@ -588,119 +590,119 @@ client.connect(function(err) {
     if (err)
         logger.log(err);
     else
-        logger.log(&#39;Connected successfully to server&#39;);
+        logger.log(&#x27;Connected successfully to server&#x27;);
 
-    db = client.db(dbName);
+    db &#x3D; client.db(dbName);
 
-    if (stashedCalls &amp;&amp; stashedCalls.length &gt; 0) {
+    if (stashedCalls &amp;amp;&amp;amp; stashedCalls.length &gt; 0) {
         for (let call of stashedCalls) {
             MRP[call.action].apply(this, call.args);
         }
-        stashedCalls = [];
+        stashedCalls &#x3D; [];
     }
 
-    exportObj.client = db;
-    emit(&#39;mrp:db:connected&#39;);
+    exportObj.client &#x3D; db;
+    emit(&#x27;mrp:db:connected&#x27;);
 });
 
 // shutdown
-on(&#39;onResourceStop&#39;, (resource) =&gt; {
-    if (resource == GetCurrentResourceName()) {
-        logger.log(&#39;Closing DB connection&#39;);
+on(&#x27;onResourceStop&#x27;, (resource) &#x3D;&gt; {
+    if (resource &#x3D;&#x3D; GetCurrentResourceName()) {
+        logger.log(&#x27;Closing DB connection&#x27;);
         client.close();
         delete MRP.db;
     }
 });
 
-on(&#39;mrp:userLogin&#39;, (playerName, source, fivemID) =&gt; {
-    logger.log(`mrp:userLogin -&gt; ${playerName}, ${source}, ${fivemID}`);
+on(&#x27;mrp:userLogin&#x27;, (playerName, source, fivemID) &#x3D;&gt; {
+    logger.log(&#x60;mrp:userLogin -&gt; ${playerName}, ${source}, ${fivemID}&#x60;);
     if (!db)
         return;
 
-    const collection = db.collection(&#39;user&#39;);
+    const collection &#x3D; db.collection(&#x27;user&#x27;);
 
-    const create = async function() {
+    const create &#x3D; async function() {
         //insert or update
-        let query = {
+        let query &#x3D; {
             _id: fivemID
         };
-        let user = {
+        let user &#x3D; {
             _id: fivemID,
             name: playerName,
             lastLoginTimestamp: Timestamp.fromNumber(Date.now())
         };
-        let options = {
+        let options &#x3D; {
             upsert: true
         };
-        const result = await collection.updateOne(query, {
+        const result &#x3D; await collection.updateOne(query, {
             $set: user
         }, options);
 
-        logger.log(`mrp:userLogin ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+        logger.log(&#x60;mrp:userLogin ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)&#x60;);
 
-        let storedUser = await collection.findOne({
+        let storedUser &#x3D; await collection.findOne({
             _id: fivemID
         });
-        emit(&#39;mrp:userJoined&#39;, storedUser);
+        emit(&#x27;mrp:userJoined&#x27;, storedUser);
     };
 
     create();
 });
 
-onNet(&#39;mrp:createCharacter&#39;, (source, inputChar) =&gt; {
-    let execute = async () =&gt; {
-        let player = await MRP.getPlayer(source);
-        MRP.createCharacter(player, inputChar, (err, response) =&gt; {
+onNet(&#x27;mrp:createCharacter&#x27;, (source, inputChar) &#x3D;&gt; {
+    let execute &#x3D; async () &#x3D;&gt; {
+        let player &#x3D; await MRP.getPlayer(source);
+        MRP.createCharacter(player, inputChar, (err, response) &#x3D;&gt; {
             if (err) {
-                logger.log(&#39;Error occurred while inserting&#39;);
+                logger.log(&#x27;Error occurred while inserting&#x27;);
             } else {
-                logger.log(&#39;inserted record&#39; + JSON.stringify(response.ops[0]));
-                emitNet(&#39;mrp:createdCharacter&#39;, source, response.ops[0]);
+                logger.log(&#x27;inserted record&#x27; + JSON.stringify(response.ops[0]));
+                emitNet(&#x27;mrp:createdCharacter&#x27;, source, response.ops[0]);
             }
         });
     };
     execute();
 });
 
-/*on(&#39;mrp:createCharacter&#39;, (player, inputChar) =&gt; {
+/*on(&#x27;mrp:createCharacter&#x27;, (player, inputChar) &#x3D;&gt; {
     MRP.createCharacter(player, inputChar);
 });*/
 
-onNet(&#39;mrp:updateCharacter&#39;, (source, character) =&gt; {
+onNet(&#x27;mrp:updateCharacter&#x27;, (source, character) &#x3D;&gt; {
     if (!character || !character._id)
         return;
 
     delete character.entityID;
 
     //convert mangled ObjectId    
-    let objId = MRP.toObjectId(character._id.id);
-    character._id = objId;
+    let objId &#x3D; MRP.toObjectId(character._id.id);
+    character._id &#x3D; objId;
 
     //convert timestamp
-    character.birthday = MRP.toMongoTimestamp(character.birthday);
+    character.birthday &#x3D; MRP.toMongoTimestamp(character.birthday);
 
-    const collection = db.collection(&#39;character&#39;);
+    const collection &#x3D; db.collection(&#x27;character&#x27;);
 
-    const update = async function() {
-        let query = {
+    const update &#x3D; async function() {
+        let query &#x3D; {
             _id: objId
         };
-        let options = {
+        let options &#x3D; {
             upsert: true
         };
         let result;
         try {
-            result = await collection.updateOne(query, {
+            result &#x3D; await collection.updateOne(query, {
                 $set: character
             }, options);
         } catch (err) {
-            logger.log(`ERROR: ${err}`); // TypeError: failed to fetch
+            logger.log(&#x60;ERROR: ${err}&#x60;); // TypeError: failed to fetch
         }
 
-        logger.log(`mrp:updateCharacter ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+        logger.log(&#x60;mrp:updateCharacter ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)&#x60;);
         if (result.modifiedCount &gt; 0) {
             MRP.updateSpawnedChar(source, character);
-            logger.log(`mrp:updateCharacter [${character.name} ${character.surname}] updated`);
+            logger.log(&#x60;mrp:updateCharacter [${character.name} ${character.surname}] updated&#x60;);
         }
     }
 
@@ -708,7 +710,7 @@ onNet(&#39;mrp:updateCharacter&#39;, (source, character) =&gt; {
 });
 
 
-onNet(&#39;mrp:deleteCharacter&#39;, (source, charId) =&gt; {
+onNet(&#x27;mrp:deleteCharacter&#x27;, (source, charId) &#x3D;&gt; {
     //TODO
     if (!charId)
         return;
@@ -716,7 +718,7 @@ onNet(&#39;mrp:deleteCharacter&#39;, (source, charId) =&gt; {
     MRP.deleteCharacter(charId);
 });
 
-module.exports = exportObj;</code></pre>
+module.exports &#x3D; exportObj;</code></pre>
           </article>
         </div>
       </div>
@@ -726,7 +728,7 @@ module.exports = exportObj;</code></pre>
   <footer id="jsdoc-footer" class="jsdoc-footer">
     <div id="jsdoc-footer-container">
       <p>
-        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> on July 16, 2021.
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
       </p>
     </div>
   </footer>

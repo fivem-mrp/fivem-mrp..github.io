@@ -1,0 +1,378 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc 3.6.7">
+  <meta charset="utf-8">
+  <title>Source: mrp_core/server.js</title>
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_core/server.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>/**
+ * @namespace MRP_SERVER
+ */
+MRP &#x3D; {
+    /**    
+     * @memberof MRP_SERVER    
+     */
+    playerSpawnedCharacters: {}
+};
+ENTITIES &#x3D; 0;
+
+const config &#x3D; require(&#x27;./config/default.json&#x27;);
+let baseItems &#x3D; require(&#x27;./config/db/items.json&#x27;); //not a constant we will delete this from memory after insert into DB
+require(&#x27;./shared/debug.js&#x27;);
+const logger &#x3D; mrp_logger;
+const db &#x3D; require(&#x27;./server/db.js&#x27;);
+const commands &#x3D; require(&#x27;./server/commands.js&#x27;);
+
+var connectedUsers &#x3D; {};
+
+
+/**
+ * MRP - description
+ * 
+ * @memberof MRP_SERVER
+ *  
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getUserId &#x3D; function(source) {
+    let numOfIdentifiers &#x3D; GetNumPlayerIdentifiers(source);
+    let userID;
+    for (let i &#x3D; 0; i &amp;lt; numOfIdentifiers; i++) {
+        const identifier &#x3D; GetPlayerIdentifier(source, i);
+
+        if (identifier.includes(&#x27;fivem:&#x27;)) {
+            userID &#x3D; identifier.slice(6);
+        }
+    }
+
+    if (!userID) {
+        //don&#x27;t have fivem suplement with steam
+        for (let i &#x3D; 0; i &amp;lt; numOfIdentifiers; i++) {
+            const identifier &#x3D; GetPlayerIdentifier(source, i);
+
+            if (identifier.includes(&#x27;steam:&#x27;)) {
+                userID &#x3D; identifier.slice(6);
+            }
+        }
+    }
+
+    if (!userID) {
+        //don&#x27;t have fivem suplement with license
+        for (let i &#x3D; 0; i &amp;lt; numOfIdentifiers; i++) {
+            const identifier &#x3D; GetPlayerIdentifier(source, i);
+
+            if (identifier.includes(&#x27;license:&#x27;)) {
+                userID &#x3D; identifier.slice(8);
+            }
+        }
+    }
+
+
+    return userID;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @return {type}  description 
+ */
+MRP.getPlayersServer &#x3D; function() {
+    let num &#x3D; GetNumPlayerIndices();
+    let players &#x3D; [];
+    for (i &#x3D; 0; i &amp;lt; num; i++) {
+        players.push({
+            id: num,
+            identifier: GetPlayerIdentifier(num),
+            name: GetPlayerName(num)
+        });
+    }
+    return players;
+};
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @return {type}  description 
+ */
+MRP.getSpawnedCharacters &#x3D; function() {
+    return MRP.playerSpawnedCharacters;
+};
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getSpawnedCharacter &#x3D; function(source) {
+    return MRP.playerSpawnedCharacters[source];
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @param  {type} char   description 
+ * @return {type}        description 
+ */
+MRP.updateSpawnedChar &#x3D; function(source, char) {
+    MRP.playerSpawnedCharacters[source] &#x3D; char;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getEntityPosition &#x3D; function(source) {
+    let retVal &#x3D; [];
+    let plyPed &#x3D; GetPlayerPed(source);
+    let plyPos &#x3D; GetEntityCoords(plyPed);
+    let plyHeading &#x3D; GetEntityHeading(plyPed);
+
+    if (plyPos &amp;amp;&amp;amp; plyHeading) {
+        retVal &#x3D; [plyPos[0], plyPos[1], plyPos[2], plyHeading];
+    }
+
+    return retVal;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} id1 description 
+ * @param  {type} id2 description 
+ * @return {type}     description 
+ */
+MRP.isObjectIDEqual &#x3D; function(id1, id2) {
+    if (!id1 || !id2 || !id1.id || !id2.id)
+        return false;
+
+    let bufferArr &#x3D; [];
+    for (let i in id1.id) {
+        bufferArr.push(id1.id[i]);
+    }
+
+    let idHash1 &#x3D; Buffer.from(bufferArr).toString();
+
+    bufferArr &#x3D; [];
+    for (let i in id2.id) {
+        bufferArr.push(id2.id[i]);
+    }
+
+    let idHash2 &#x3D; Buffer.from(bufferArr).toString();
+
+    if (idHash1 &#x3D;&#x3D; idHash2)
+        return true;
+
+    return false;
+};
+
+
+/**
+ * getConnectedUsers - returns all users connected
+ * @memberof MRP_SERVER
+ */
+var getConnectedUsers &#x3D; () &#x3D;&gt; connectedUsers;
+
+on(&#x27;mrp:getSharedObject&#x27;, (cb) &#x3D;&gt; {
+    cb(MRP);
+});
+
+onNet(&#x27;mrp:characterSpawned&#x27;, (char) &#x3D;&gt; {
+    //TODO
+});
+
+on(&#x27;onResourceStart&#x27;, (resource) &#x3D;&gt; {
+    let resName &#x3D; GetCurrentResourceName();
+    if (resName !&#x3D; resource)
+        return;
+
+    let players &#x3D; MRP.getPlayersServer();
+    for (let player of players) {
+        let userID &#x3D; MRP.getUserId(player.id + &quot;&quot;);
+        if (userID) {
+            emit(&#x27;mrp:userLogin&#x27;, player.name, player, userID);
+        }
+    }
+});
+
+on(&#x27;mrp:db:connected&#x27;, () &#x3D;&gt; {
+    const inserBaseItems &#x3D; async function() {
+        console.log(&#x60;Updating base items in DB&#x60;);
+        let connection &#x3D; db.client;
+        const collection &#x3D; connection.collection(&#x27;item&#x27;);
+
+        //prefill DB with default values
+        for (let k in baseItems) {
+            let baseItem &#x3D; baseItems[k];
+
+            await collection.updateOne({
+                name: baseItem.name
+            }, {
+                $set: baseItem
+            }, {
+                upsert: true
+            });
+
+            logger.log(&#x60;Item [${baseItem.name}] updated&#x60;);
+        }
+
+        //remove loaded items from memory don&#x27;t need them any more
+        baseItems &#x3D; null;
+    }
+
+    inserBaseItems();
+});
+
+on(&#x27;playerConnecting&#x27;, (playerName, setKickReason, deferrals) &#x3D;&gt; {
+    deferrals.defer();
+
+    let player &#x3D; global.source;
+
+    deferrals.update(&#x60;Hello ${playerName}. Your steam ID is being checked.&#x60;)
+
+    logger.log(&#x60;Player connecting: ${playerName}&#x60;);
+
+    let userID &#x3D; MRP.getUserId(player);
+
+    deferrals.done();
+
+    if (userID) {
+        emit(&#x27;mrp:userLogin&#x27;, playerName, player, userID);
+    }
+});
+
+on(&#x27;onResourceStop&#x27;, (resource) &#x3D;&gt; {
+    if (resource &#x3D;&#x3D; GetCurrentResourceName()) {
+        //TODO despawn characters to prevent &quot;ghost&quot; characters from running around
+    }
+});
+
+on(&#x27;mrp:userJoined&#x27;, (user) &#x3D;&gt; {
+    connectedUsers[user._id] &#x3D; user;
+});
+
+on(&quot;playerDropped&quot;, (reason) &#x3D;&gt; {
+    let source &#x3D; global.source;
+
+    logger.log(&#x60;Player ${GetPlayerName(source)} dropped (Reason: ${reason}).&#x60;)
+
+    let userID &#x3D; MRP.getUserId(source);
+    if (userID) {
+        delete connectedUsers[userID];
+    }
+});
+
+onNet(&#x27;mrp:server:tacklePlayer&#x27;, (tackled, forvardVector, tackler) &#x3D;&gt; {
+    console.log(&#x60;SERVER: tackled [${tackled}] forvardVector [${forvardVector}] tackler [${tackler}]&#x60;);
+    emitNet(&#x27;mrp:client:tacklePlayer&#x27;, tackled, forvardVector, tackler);
+});
+
+onNet(&#x27;mrp:fetchCharacters&#x27;, (source) &#x3D;&gt; {
+    let execute &#x3D; async function() {
+        let characters &#x3D; await MRP.getCharacters(source);
+        emitNet(&#x27;mrp:client:fetchCharacters&#x27;, source, characters);
+    };
+    execute();
+});
+
+onNet(&#x27;mrp:useCharacter&#x27;, (source, characterToUse) &#x3D;&gt; {
+    if (!characterToUse)
+        return;
+
+    let objId &#x3D; MRP.toObjectId(characterToUse._id.id);
+    characterToUse._id &#x3D; objId;
+
+    //convert timestamp
+    characterToUse.birthday &#x3D; MRP.toMongoTimestamp(characterToUse.birthday);
+
+    characterToUse.entityID &#x3D; ENTITIES++;
+    let update &#x3D; async function() {
+        let updatedUser &#x3D; await MRP.setLastUsedCharacter(source, characterToUse);
+        let users &#x3D; MRP.getConnectedUsers();
+        users[updatedUser._id] &#x3D; updatedUser;
+    };
+    update();
+    let spawnPoint &#x3D; {};
+    Object.assign(spawnPoint, config.spawnPoints[0]);
+    spawnPoint.model &#x3D; characterToUse.model;
+    MRP.playerSpawnedCharacters[source] &#x3D; characterToUse;
+    emitNet(&#x27;mrp:spawn&#x27;, source, characterToUse, spawnPoint);
+    emit(&#x27;mrp:spawn&#x27;, source, characterToUse, spawnPoint);
+});
+
+onNet(&#x27;mrp:server:read:item&#x27;, (source, name, uuid) &#x3D;&gt; {
+    MRP.read(&#x27;item&#x27;, {
+        name: name
+    }, (res) &#x3D;&gt; {
+        emitNet(&#x27;mrp:server:read:item:response&#x27;, source, res, uuid);
+    })
+});
+
+
+MRP.log &#x3D; logger.log;
+MRP.getConnectedUsers &#x3D; getConnectedUsers;
+
+exports(&#x27;log&#x27;, logger.log);
+exports(&#x27;DBCreate&#x27;, MRP.create);
+exports(&#x27;DBRead&#x27;, MRP.read);
+exports(&#x27;toObjectId&#x27;, MRP.toObjectId);
+//exports(&#x27;getConnectedUsers&#x27;, getConnectedUsers);</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>
