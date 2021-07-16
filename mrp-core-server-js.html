@@ -1,0 +1,367 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc ">
+  <meta charset="utf-8">
+  <title>Source: mrp_core/server.js</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Karla:400,400i,700,700i|Noto+Serif:400,400i,700,700i&display=swap&subset=latin-ext">
+  <link rel="stylesheet" href="css/baseline.css">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_core/server.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>/**
+ * @namespace MRP_SERVER
+ */
+MRP = {
+    /**    
+     * @memberof MRP_SERVER    
+     */
+    playerSpawnedCharacters: {}
+};
+ENTITIES = 0;
+
+const config = require(&#39;./config/default.json&#39;);
+let baseItems = require(&#39;./config/db/items.json&#39;); //not a constant we will delete this from memory after insert into DB
+require(&#39;./shared/debug.js&#39;);
+const logger = mrp_logger;
+const db = require(&#39;./server/db.js&#39;);
+const commands = require(&#39;./server/commands.js&#39;);
+
+var connectedUsers = {};
+
+
+/**
+ * MRP - description
+ * 
+ * @memberof MRP_SERVER
+ *  
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getUserId = function(source) {
+    let numOfIdentifiers = GetNumPlayerIdentifiers(source);
+    let userID;
+    for (let i = 0; i &lt; numOfIdentifiers; i++) {
+        const identifier = GetPlayerIdentifier(source, i);
+
+        if (identifier.includes(&#39;fivem:&#39;)) {
+            userID = identifier.slice(6);
+        }
+    }
+
+    if (!userID) {
+        //don&#39;t have fivem suplement with steam
+        for (let i = 0; i &lt; numOfIdentifiers; i++) {
+            const identifier = GetPlayerIdentifier(source, i);
+
+            if (identifier.includes(&#39;steam:&#39;)) {
+                userID = identifier.slice(6);
+            }
+        }
+    }
+
+    if (!userID) {
+        //don&#39;t have fivem suplement with license
+        for (let i = 0; i &lt; numOfIdentifiers; i++) {
+            const identifier = GetPlayerIdentifier(source, i);
+
+            if (identifier.includes(&#39;license:&#39;)) {
+                userID = identifier.slice(8);
+            }
+        }
+    }
+
+
+    return userID;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @return {type}  description 
+ */
+MRP.getPlayersServer = function() {
+    let num = GetNumPlayerIndices();
+    let players = [];
+    for (i = 0; i &lt; num; i++) {
+        players.push({
+            id: num,
+            identifier: GetPlayerIdentifier(num),
+            name: GetPlayerName(num)
+        });
+    }
+    return players;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getSpawnedCharacter = function(source) {
+    return MRP.playerSpawnedCharacters[source];
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @param  {type} char   description 
+ * @return {type}        description 
+ */
+MRP.updateSpawnedChar = function(source, char) {
+    MRP.playerSpawnedCharacters[source] = char;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getEntityPosition = function(source) {
+    let retVal = [];
+    let plyPed = GetPlayerPed(source);
+    let plyPos = GetEntityCoords(plyPed);
+    let plyHeading = GetEntityHeading(plyPed);
+
+    if (plyPos &amp;&amp; plyHeading) {
+        retVal = [plyPos[0], plyPos[1], plyPos[2], plyHeading];
+    }
+
+    return retVal;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} id1 description 
+ * @param  {type} id2 description 
+ * @return {type}     description 
+ */
+MRP.isObjectIDEqual = function(id1, id2) {
+    if (!id1 || !id2 || !id1.id || !id2.id)
+        return false;
+
+    let bufferArr = [];
+    for (let i in id1.id) {
+        bufferArr.push(id1.id[i]);
+    }
+
+    let idHash1 = Buffer.from(bufferArr).toString();
+
+    bufferArr = [];
+    for (let i in id2.id) {
+        bufferArr.push(id2.id[i]);
+    }
+
+    let idHash2 = Buffer.from(bufferArr).toString();
+
+    if (idHash1 == idHash2)
+        return true;
+
+    return false;
+};
+
+
+/**
+ * getConnectedUsers - returns all users connected
+ * @memberof MRP_SERVER
+ */
+var getConnectedUsers = () =&gt; connectedUsers;
+
+on(&#39;mrp:getSharedObject&#39;, (cb) =&gt; {
+    cb(MRP);
+});
+
+onNet(&#39;mrp:characterSpawned&#39;, (char) =&gt; {
+    //TODO
+});
+
+on(&#39;onResourceStart&#39;, (resource) =&gt; {
+    let resName = GetCurrentResourceName();
+    if (resName != resource)
+        return;
+
+    let players = MRP.getPlayersServer();
+    for (let player of players) {
+        let userID = MRP.getUserId(player.id + &quot;&quot;);
+        if (userID) {
+            emit(&#39;mrp:userLogin&#39;, player.name, player, userID);
+        }
+    }
+});
+
+on(&#39;mrp:db:connected&#39;, () =&gt; {
+    const inserBaseItems = async function() {
+        console.log(`Updating base items in DB`);
+        let connection = db.client;
+        const collection = connection.collection(&#39;item&#39;);
+
+        //prefill DB with default values
+        for (let k in baseItems) {
+            let baseItem = baseItems[k];
+
+            await collection.updateOne({
+                name: baseItem.name
+            }, {
+                $set: baseItem
+            }, {
+                upsert: true
+            });
+
+            logger.log(`Item [${baseItem.name}] updated`);
+        }
+
+        //remove loaded items from memory don&#39;t need them any more
+        baseItems = null;
+    }
+
+    inserBaseItems();
+});
+
+on(&#39;playerConnecting&#39;, (playerName, setKickReason, deferrals) =&gt; {
+    deferrals.defer();
+
+    let player = global.source;
+
+    deferrals.update(`Hello ${playerName}. Your steam ID is being checked.`)
+
+    logger.log(`Player connecting: ${playerName}`);
+
+    let userID = MRP.getUserId(player);
+
+    deferrals.done();
+
+    if (userID) {
+        emit(&#39;mrp:userLogin&#39;, playerName, player, userID);
+    }
+});
+
+on(&#39;onResourceStop&#39;, (resource) =&gt; {
+    if (resource == GetCurrentResourceName()) {
+        //TODO despawn characters to prevent &quot;ghost&quot; characters from running around
+    }
+});
+
+on(&#39;mrp:userJoined&#39;, (user) =&gt; {
+    connectedUsers[user._id] = user;
+});
+
+on(&quot;playerDropped&quot;, (reason) =&gt; {
+    let source = global.source;
+
+    logger.log(`Player ${GetPlayerName(source)} dropped (Reason: ${reason}).`)
+
+    let userID = MRP.getUserId(source);
+    if (userID) {
+        delete connectedUsers[userID];
+    }
+});
+
+onNet(&#39;mrp:server:tacklePlayer&#39;, (tackled, forvardVector, tackler) =&gt; {
+    console.log(`SERVER: tackled [${tackled}] forvardVector [${forvardVector}] tackler [${tackler}]`);
+    emitNet(&#39;mrp:client:tacklePlayer&#39;, tackled, forvardVector, tackler);
+});
+
+onNet(&#39;mrp:fetchCharacters&#39;, (source) =&gt; {
+    let execute = async function() {
+        let characters = await MRP.getCharacters(source);
+        emitNet(&#39;mrp:client:fetchCharacters&#39;, source, characters);
+    };
+    execute();
+});
+
+onNet(&#39;mrp:useCharacter&#39;, (source, characterToUse) =&gt; {
+    if (!characterToUse)
+        return;
+
+    let objId = MRP.toObjectId(characterToUse._id.id);
+    characterToUse._id = objId;
+
+    //convert timestamp
+    characterToUse.birthday = MRP.toMongoTimestamp(characterToUse.birthday);
+
+    characterToUse.entityID = ENTITIES++;
+    let update = async function() {
+        let updatedUser = await MRP.setLastUsedCharacter(source, characterToUse);
+        let users = MRP.getConnectedUsers();
+        users[updatedUser._id] = updatedUser;
+    };
+    update();
+    let spawnPoint = {};
+    Object.assign(spawnPoint, config.spawnPoints[0]);
+    spawnPoint.model = characterToUse.model;
+    MRP.playerSpawnedCharacters[source] = characterToUse;
+    emitNet(&#39;mrp:spawn&#39;, source, characterToUse, spawnPoint);
+    emit(&#39;mrp:spawn&#39;, source, characterToUse, spawnPoint);
+});
+
+onNet(&#39;mrp:server:read:item&#39;, (source, name, uuid) =&gt; {
+    MRP.read(&#39;item&#39;, {
+        name: name
+    }, (res) =&gt; {
+        emitNet(&#39;mrp:server:read:item:response&#39;, source, res, uuid);
+    })
+});
+
+
+MRP.log = logger.log;
+MRP.getConnectedUsers = getConnectedUsers;
+
+exports(&#39;log&#39;, logger.log);
+exports(&#39;DBCreate&#39;, MRP.create);
+exports(&#39;DBRead&#39;, MRP.read);
+exports(&#39;toObjectId&#39;, MRP.toObjectId);
+//exports(&#39;getConnectedUsers&#39;, getConnectedUsers);</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>

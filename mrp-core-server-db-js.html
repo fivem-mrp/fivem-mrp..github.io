@@ -1,0 +1,741 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc ">
+  <meta charset="utf-8">
+  <title>Source: mrp_core/server/db.js</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Karla:400,400i,700,700i|Noto+Serif:400,400i,700,700i&display=swap&subset=latin-ext">
+  <link rel="stylesheet" href="css/baseline.css">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_core/server/db.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>const config = require(&#39;../config/default.json&#39;);
+
+const MongoClient = require(&#39;mongodb&#39;).MongoClient;
+const Timestamp = require(&#39;mongodb&#39;).Timestamp;
+const ObjectID = require(&#39;mongodb&#39;).ObjectID;
+require(&#39;../shared/debug.js&#39;);
+const logger = mrp_logger;
+const BSON = require(&#39;bson&#39;);
+const bson = new BSON();
+
+// Connection URL
+const url = config.DB.url;
+
+// Database Name
+const dbName = config.DB.name;
+const client = new MongoClient(url, {
+    useUnifiedTopology: true
+});
+
+//new default character starts
+const DEFAULT_HEALTH = config.newCharacter.health;
+const DEFAULT_ARMOR = config.newCharacter.armor;
+const DEFAULT_HUNGER = config.newCharacter.hunger;
+const DEFAULT_THIRST = config.newCharacter.thirst;
+const DEFAULT_CASH = config.newCharacter.cash;
+const DEFAULT_BANK = config.newCharacter.bank;
+const DEFAULT_STRESS = config.newCharacter.stress;
+
+let exportObj = {
+    test: &quot;test&quot;
+};
+
+let db;
+
+
+/**
+ * MRP - description
+ * 
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getPlayer = async function(source) {
+    if (!db)
+        return null;
+
+    const collection = db.collection(&#39;user&#39;);
+
+    let id = MRP.getUserId(source);
+    let storedUser = await collection.findOne({
+        _id: id
+    });
+    return storedUser;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @param  {type} char   description 
+ * @return {type}        description 
+ */
+MRP.setLastUsedCharacter = async function(source, char) {
+    if (!db)
+        return null;
+
+    let player = await MRP.getPlayer(source);
+    player.lastCharacter = char._id;
+
+    const collection = db.collection(&#39;user&#39;);
+
+    let query = {
+        _id: player._id
+    };
+    let options = {
+        upsert: true
+    };
+    const result = await collection.updateOne(query, {
+        $set: player
+    }, options);
+
+    logger.log(`Last character used operation count ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+
+    return player;
+}
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} source description 
+ * @return {type}        description 
+ */
+MRP.getCharacters = async function(source) {
+    if (!db)
+        return null;
+
+    const collection = db.collection(&#39;character&#39;);
+
+    let id = MRP.getUserId(source);
+    let cursor = await collection.find({
+        owner: id
+    }, {
+        sort: {
+            surname: 1
+        }
+    });
+
+    let chars = [];
+    if ((await cursor.count()) === 0) {
+        logger.log(&#39;No characters found!&#39;);
+    } else {
+        chars = cursor.toArray();
+    }
+
+    return chars;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} obj description 
+ * @return {type}     description 
+ */
+MRP.toObjectId = function(obj) {
+    let arrayBuffer = [];
+    for (let i in obj) {
+        arrayBuffer.push(obj[i]);
+    }
+
+    let buf = Buffer.from(arrayBuffer);
+
+    let objId = new ObjectID(buf);
+
+    return objId;
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} obj description 
+ * @return {type}     description 
+ */
+MRP.toMongoTimestamp = function(obj) {
+    return Timestamp.fromBits(obj.low_, obj.high_);
+}
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} id description 
+ * @return {type}    description 
+ */
+MRP.deleteCharacter = async function(id) {
+    const collection = db.collection(&#39;character&#39;);
+
+    let objId = id;
+    if (id.id)
+        objId = MRP.toObjectId(id.id);
+
+    const result = await collection.deleteOne({
+        _id: objId
+    });
+
+    logger.log(`Deleted character count ${result.modifiedCount}`);
+}
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} player    description 
+ * @param  {type} inputChar description 
+ * @param  {type} cb        description 
+ * @return {type}           description 
+ */
+MRP.createCharacter = function(player, inputChar, cb) {
+    if (!player || !inputChar)
+        return;
+
+    const collection = db.collection(&#39;character&#39;);
+
+    const create = async function() {
+        let birthDate = inputChar.birthday ? new Date(inputChar.birthday).getTime() : Date.now();
+
+        const agg = [{
+            &#39;$group&#39;: {
+                &#39;_id&#39;: &#39;$item&#39;,
+                &#39;maxStateId&#39;: {
+                    &#39;$max&#39;: &#39;$stateId&#39;
+                }
+            }
+        }];
+        //aggreage max state ids to generate a new one
+        const cursor = await collection.aggregate(agg);
+        let maxId = await cursor.toArray();
+        let stateId = 1;
+        if (maxId &amp;&amp; maxId.length &gt; 0 &amp;&amp; maxId[0].maxStateId) {
+            stateId += maxId[0].maxStateId;
+        }
+        const result = await collection.insertOne({
+            name: inputChar.name,
+            surname: inputChar.surname,
+            stats: {
+                health: DEFAULT_HEALTH,
+                armor: DEFAULT_ARMOR,
+                hunger: DEFAULT_HUNGER,
+                thirst: DEFAULT_THIRST,
+                stress: DEFAULT_STRESS,
+                cash: DEFAULT_CASH
+            },
+            job: {
+                name: &quot;unemployed&quot;
+            },
+            stateId: stateId,
+            sex: inputChar.sex || &quot;MALE&quot;,
+            birthday: Timestamp.fromNumber(birthDate),
+            model: (inputChar.sex == &quot;FEMALE&quot;) ? &quot;mp_f_freemode_01&quot; : &quot;mp_m_freemode_01&quot;,
+            owner: player._id
+        }, cb);
+
+        logger.log(`mrp:createCharacter [${inputChar.name} ${inputChar.surname}] created`);
+    }
+
+    create();
+}
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} id             description 
+ * @return {type}                description 
+ */
+MRP.delete = async function(collectionName, id) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;delete&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+
+    let objId = id;
+    if (id.id)
+        objId = MRP.toObjectId(id.id);
+
+    const result = await collection.deleteOne({
+        _id: objId
+    });
+
+    logger.log(`Deleted ${collectionName} count ${result.modifiedCount}`);
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} q              description 
+ * @return {type}                description 
+ */
+MRP.deleteQuery = function(collectionName, q) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;delete&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+
+    normalizeIDs(q)
+    const result = collection.deleteOne(q);
+
+    logger.log(`Deleted ${collectionName} count ${result.modifiedCount}`);
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} obj            description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.create = function(collectionName, obj, cb) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;create&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+
+    normalizeIDs(obj);
+
+    const create = async function() {
+        const result = await collection.insertOne(obj);
+
+        logger.log(`[${collectionName}] created`);
+
+        if (result)
+            cb(result);
+    }
+
+    create();
+};
+
+let stashedCalls = [];
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} obj            description 
+ * @param  {type} q              description 
+ * @param  {type} opt            description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.update = function(collectionName, obj, q, opt, cb) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;update&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+
+    const collection = db.collection(collectionName);
+
+    normalizeIDs(q);
+    normalizeIDs(obj);
+
+    const create = async function() {
+        let query = {};
+        if (q) {
+            query = q;
+        } else {
+            if (obj._id)
+                query._id = obj._id;
+        }
+
+        let options;
+        if (opt) {
+            options = opt;
+        } else {
+            options = {
+                upsert: true
+            };
+        }
+
+        let toUpdate = {
+            $set: obj
+        };
+
+        if (obj.$set || obj.$pull) {
+            toUpdate = obj
+        }
+
+        const result = await collection.updateOne(query, toUpdate, options);
+
+        logger.log(`[${collectionName}] updated`);
+        if (cb)
+            cb(result);
+    }
+
+    create();
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} query          description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.read = function(collectionName, query, cb) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;read&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+
+    let read = async () =&gt; {
+        normalizeIDs(query);
+        let storedDocument = await collection.findOne(query);
+        cb(storedDocument);
+    };
+    read();
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} query          description 
+ * @param  {type} options        description 
+ * @param  {type} paging         description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.find = function(collectionName, query, options, paging, cb) {
+    if (Array.isArray(query))
+        query = undefined;
+    if (Array.isArray(options))
+        options = undefined;
+
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;find&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+    let find = async () =&gt; {
+        normalizeIDs(query);
+        const cursor = await collection.find(query, options);
+        if ((await cursor.count()) === 0) {
+            logger.log(`No documents found for collection [${collectionName}] with query [${JSON.stringify(query)}] and options [${JSON.stringify(options)}]`);
+            cb(null);
+            return;
+        }
+
+        if (paging &amp;&amp; paging.skip !== false)
+            cursor.skip(paging.skip);
+        if (paging &amp;&amp; paging.limit !== false)
+            cursor.limit(paging.limit);
+
+        let documents = await cursor.toArray();
+        cb(documents);
+    };
+    find();
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} query          description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.aggregate = function(collectionName, query, cb) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;aggregate&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+    let find = async () =&gt; {
+        normalizeIDs(query);
+        const cursor = await collection.aggregate(query);
+
+        let documents = await cursor.toArray();
+
+        cb(documents);
+    };
+    find();
+};
+
+
+/**
+ * MRP - description
+ *  
+ * @memberof MRP_SERVER
+ * @param  {type} collectionName description 
+ * @param  {type} query          description 
+ * @param  {type} cb             description 
+ * @return {type}                description 
+ */
+MRP.count = function(collectionName, query, cb) {
+    if (!db) {
+        //DB not connected stash changes
+        stashedCalls.push({
+            action: &quot;count&quot;,
+            args: arguments
+        });
+        return;
+    }
+
+    const collection = db.collection(collectionName);
+    let count = async () =&gt; {
+        normalizeIDs(query);
+        const count = await collection.countDocuments(query);
+        cb(count);
+    };
+    count();
+};
+
+let normalizeIDs = (obj) =&gt; {
+    if (!obj)
+        return;
+
+    for (let k in obj) {
+        if (Array.isArray(obj[k])) {
+            for (let i in obj[k]) {
+                normalizeIDs(obj[k][i]);
+            }
+        } else if (typeof obj[k] == &#39;object&#39;) {
+            if (obj[k]._bsontype &amp;&amp; obj[k]._bsontype == &quot;ObjectID&quot;) {
+                obj[k] = MRP.toObjectId(obj[k].id);
+            } else {
+                normalizeIDs(obj[k]);
+            }
+        }
+    }
+};
+
+// Use connect method to connect to the server
+client.connect(function(err) {
+    if (err)
+        logger.log(err);
+    else
+        logger.log(&#39;Connected successfully to server&#39;);
+
+    db = client.db(dbName);
+
+    if (stashedCalls &amp;&amp; stashedCalls.length &gt; 0) {
+        for (let call of stashedCalls) {
+            MRP[call.action].apply(this, call.args);
+        }
+        stashedCalls = [];
+    }
+
+    exportObj.client = db;
+    emit(&#39;mrp:db:connected&#39;);
+});
+
+// shutdown
+on(&#39;onResourceStop&#39;, (resource) =&gt; {
+    if (resource == GetCurrentResourceName()) {
+        logger.log(&#39;Closing DB connection&#39;);
+        client.close();
+        delete MRP.db;
+    }
+});
+
+on(&#39;mrp:userLogin&#39;, (playerName, source, fivemID) =&gt; {
+    logger.log(`mrp:userLogin -&gt; ${playerName}, ${source}, ${fivemID}`);
+    if (!db)
+        return;
+
+    const collection = db.collection(&#39;user&#39;);
+
+    const create = async function() {
+        //insert or update
+        let query = {
+            _id: fivemID
+        };
+        let user = {
+            _id: fivemID,
+            name: playerName,
+            lastLoginTimestamp: Timestamp.fromNumber(Date.now())
+        };
+        let options = {
+            upsert: true
+        };
+        const result = await collection.updateOne(query, {
+            $set: user
+        }, options);
+
+        logger.log(`mrp:userLogin ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+
+        let storedUser = await collection.findOne({
+            _id: fivemID
+        });
+        emit(&#39;mrp:userJoined&#39;, storedUser);
+    };
+
+    create();
+});
+
+onNet(&#39;mrp:createCharacter&#39;, (source, inputChar) =&gt; {
+    let execute = async () =&gt; {
+        let player = await MRP.getPlayer(source);
+        MRP.createCharacter(player, inputChar, (err, response) =&gt; {
+            if (err) {
+                logger.log(&#39;Error occurred while inserting&#39;);
+            } else {
+                logger.log(&#39;inserted record&#39; + JSON.stringify(response.ops[0]));
+                emitNet(&#39;mrp:createdCharacter&#39;, source, response.ops[0]);
+            }
+        });
+    };
+    execute();
+});
+
+/*on(&#39;mrp:createCharacter&#39;, (player, inputChar) =&gt; {
+    MRP.createCharacter(player, inputChar);
+});*/
+
+onNet(&#39;mrp:updateCharacter&#39;, (source, character) =&gt; {
+    if (!character || !character._id)
+        return;
+
+    delete character.entityID;
+
+    //convert mangled ObjectId    
+    let objId = MRP.toObjectId(character._id.id);
+    character._id = objId;
+
+    //convert timestamp
+    character.birthday = MRP.toMongoTimestamp(character.birthday);
+
+    const collection = db.collection(&#39;character&#39;);
+
+    const update = async function() {
+        let query = {
+            _id: objId
+        };
+        let options = {
+            upsert: true
+        };
+        let result;
+        try {
+            result = await collection.updateOne(query, {
+                $set: character
+            }, options);
+        } catch (err) {
+            logger.log(`ERROR: ${err}`); // TypeError: failed to fetch
+        }
+
+        logger.log(`mrp:updateCharacter ${result.matchedCount} user(s) matched the filter, updated ${result.modifiedCount} user(s)`);
+        if (result.modifiedCount &gt; 0) {
+            MRP.updateSpawnedChar(source, character);
+            logger.log(`mrp:updateCharacter [${character.name} ${character.surname}] updated`);
+        }
+    }
+
+    update();
+});
+
+
+onNet(&#39;mrp:deleteCharacter&#39;, (source, charId) =&gt; {
+    //TODO
+    if (!charId)
+        return;
+
+    MRP.deleteCharacter(charId);
+});
+
+module.exports = exportObj;</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>

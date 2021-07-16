@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc ">
+  <meta charset="utf-8">
+  <title>Source: mrp_employment/server/server.js</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Karla:400,400i,700,700i|Noto+Serif:400,400i,700,700i&display=swap&subset=latin-ext">
+  <link rel="stylesheet" href="css/baseline.css">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_employment/server/server.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>const config = require(&#39;./config/config.json&#39;);
+
+let localeConvar = GetConvar(&quot;mrp_locale&quot;, &quot;en&quot;);
+let locale = config.locale[localeConvar];
+
+MRP_SERVER = null;
+
+emit(&#39;mrp:getSharedObject&#39;, obj =&gt; MRP_SERVER = obj);
+
+while (MRP_SERVER == null) {
+    console.log(&#39;Waiting for shared object....&#39;);
+}
+
+/**
+ * need to have module mrp_employment loaded
+ * 
+ * @memberof MRP_SERVER
+ * @namespace employment
+ */
+MRP_SERVER.employment = {
+
+    /**    
+     * findEmployement - description
+     * 
+     * @memberof MRP_SERVER.employment
+     * @param  {type} data     description     
+     * @param  {type} business description     
+     * @param  {type} role     description     
+     * @return {type}          description     
+     */
+    findEmployement(data, business, role) {
+        let employment;
+        for (let emp of data.employment) {
+            if (emp.business == business &amp;&amp; emp.role == role)
+                employment = emp;
+        }
+        return employment;
+    },
+
+
+    /**    
+     * addEmployment - description    
+     * 
+     * @memberof MRP_SERVER.employment     
+     * @param  {type} source     description     
+     * @param  {type} stateId    description     
+     * @param  {type} businessId description     
+     * @param  {type} jobName    description     
+     * @return {type}            description     
+     */
+    addEmployment(source, stateId, businessId, jobName) {
+        MRP_SERVER.read(&#39;character&#39;, {
+            stateId: stateId
+        }, (char) =&gt; {
+            if (!char) {
+                emitNet(&#39;chat:addMessage&#39;, source, {
+                    template: &#39;&lt;div class=&quot;chat-message nonemergency&quot;&gt;{0}&lt;/div&gt;&#39;,
+                    args: [
+                        locale.errorWLChar
+                    ]
+                });
+                console.log(&#39;Unable to find a character to whitelist&#39;);
+                return;
+            }
+
+            MRP_SERVER.read(&#39;employment&#39;, {
+                char: char._id
+            }, (data) =&gt; {
+                let needUpdate = false;
+                if (!data) {
+                    //unemployed
+                    data = {
+                        char: char._id,
+                        employment: [{
+                            business: businessId,
+                            role: jobName
+                        }]
+                    };
+                    needUpdate = true;
+                } else {
+                    let job = MRP_SERVER.employment.findEmployement(data, businessId, jobName);
+                    if (job) {
+                        console.log(`Player with state ID [${stateId}] already has a job [${jobName}]`);
+                        emitNet(&#39;chat:addMessage&#39;, source, {
+                            template: &#39;&lt;div class=&quot;chat-message nonemergency&quot;&gt;{0}&lt;/div&gt;&#39;,
+                            args: [
+                                locale.errorAlreadyHasJob.replace(&#39;${stateId}&#39;, stateId).replace(&#39;${jobName}&#39;, jobName)
+                            ]
+                        });
+                        return;
+                    }
+
+                    needUpdate = true;
+                    data.employment.push({
+                        business: businessId,
+                        role: jobName
+                    });
+                }
+
+                if (needUpdate) {
+                    let query = {};
+
+                    if (data._id)
+                        query._id = data._id;
+
+                    MRP_SERVER.update(&#39;employment&#39;, data, query, null, (result) =&gt; {
+                        if (result.modifiedCount &gt; 0) {
+                            console.log(`Updated employment for state ID [${stateId}] with job name [${jobName}]`);
+                        } else {
+                            console.log(`Added employment for state ID [${stateId}] with job name [${jobName}]`);
+                        }
+
+                        emitNet(&#39;chat:addMessage&#39;, source, {
+                            template: &#39;&lt;div class=&quot;chat-message nonemergency&quot;&gt;{0}&lt;/div&gt;&#39;,
+                            args: [
+                                locale.wlSuccess.replace(&#39;${stateId}&#39;, stateId).replace(&#39;${jobName}&#39;, jobName)
+                            ]
+                        });
+                    });
+                }
+            });
+        });
+    }
+};
+
+RegisterCommand(&#39;wl&#39;, (source, args) =&gt; {
+    //whitelist command
+    let stateId = parseInt(args[0]);
+    let jobName = args[1];
+    if (!stateId)
+        return;
+    if (!jobName)
+        return;
+
+    MRP_SERVER.employment.addEmployment(source, stateId, &#39;city&#39;, jobName); //not sure if we only allow city whitelist for now
+}, true);
+
+onNet(&#39;mrp:employment:server:getEmployment&#39;, (source, charId, uuid) =&gt; {
+    MRP_SERVER.read(&#39;employment&#39;, {
+        char: charId
+    }, (result) =&gt; {
+        emitNet(&#39;mrp:employment:server:getEmployment:response&#39;, source, result, uuid);
+    });
+});
+
+on(&#39;mrp:employment:getSharedObject&#39;, (cb) =&gt; {
+    cb(MRP_SERVER);
+});</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>
