@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc 3.6.7">
+  <meta charset="utf-8">
+  <title>Source: mrp_business/server/server.js</title>
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_business/server/server.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>/**
+ * need to have module mrp_business loaded
+ * 
+ * @memberof MRP_SERVER
+ * @namespace business
+ */
+
+const config &#x3D; require(&#x27;./config/config.json&#x27;);
+
+let localeConvar &#x3D; GetConvar(&quot;mrp_locale&quot;, &quot;en&quot;);
+let locale &#x3D; config.locale[localeConvar];
+
+MRP_SERVER &#x3D; null;
+
+emit(&#x27;mrp:getSharedObject&#x27;, obj &#x3D;&gt; MRP_SERVER &#x3D; obj);
+
+while (MRP_SERVER &#x3D;&#x3D; null) {
+    console.log(&#x27;Waiting for shared object....&#x27;);
+}
+
+/**
+ * Create document event
+ * @event MRP_SERVER.business#mrp:business:server:createDocument
+ * @type {object}
+ * @property {Document} data      document to create
+ * @fires MRP_SERVER.bankin#mrp:bankin:server:pay:cash
+ * @fires MRP_SERVER.inventory#mrp:inventory:server:AddItem
+ */
+onNet(&#x27;mrp:business:server:createDocument&#x27;, (source, data) &#x3D;&gt; {
+    if (!data) {
+        console.log(&#x27;Empty data object&#x27;);
+        return;
+    }
+
+    let char &#x3D; MRP_SERVER.getSpawnedCharacter(source);
+    if (!char) {
+        console.log(&#x27;No logged character&#x27;);
+        return;
+    }
+
+    data.createdBy &#x3D; char._id;
+    data.createdAt &#x3D; Date.now();
+
+    emit(&#x27;mrp:bankin:server:pay:cash&#x27;, source, config.businessProposalPrice);
+
+    MRP_SERVER.create(&#x27;document&#x27;, data, (r) &#x3D;&gt; {
+        console.log(&#x27;Created business proposal document&#x27;);
+        emit(&#x27;mrp:inventory:server:AddItem&#x27;, &#x27;businessproposal&#x27;, 1, null, {
+            documentId: r.insertedId
+        }, source);
+    });
+});
+
+/**
+ * View document event
+ * @event MRP_SERVER.business#mrp:business:server:view
+ * @type {object}
+ * @property {Item} data      item of the document to view
+ * @fires MRP_CLIENT.business#mrp:business:client:view
+ */
+onNet(&#x27;mrp:business:server:view&#x27;, (source, data) &#x3D;&gt; {
+    if (!data || !data.info) {
+        console.log(&#x27;Invalid data object received&#x27;);
+        return;
+    }
+
+    MRP_SERVER.read(&#x27;document&#x27;, {
+        _id: data.info.documentId
+    }, (doc) &#x3D;&gt; {
+        if (!doc) {
+            console.log(&#x27;No document found&#x27;);
+            emitNet(&#x27;chat:addMessage&#x27;, source, {
+                template: &#x27;&amp;lt;div class&#x3D;&quot;chat-message nonemergency&quot;&gt;{0}&amp;lt;/div&gt;&#x27;,
+                args: [
+                    locale.no_document
+                ]
+            });
+            return;
+        }
+
+        emitNet(&#x27;mrp:business:client:view&#x27;, source, doc, data);
+    });
+});
+
+/**
+ * Create business event
+ * @event MRP_SERVER.business#mrp:business:server:create
+ * @type {object}
+ * @property {Document} doc      document that&#x27;s used as a base for business creation
+ */
+onNet(&#x27;mrp:business:server:create&#x27;, (source, doc) &#x3D;&gt; {
+    //create the actual business
+    MRP_SERVER.read(&#x27;character&#x27;, {
+        _id: doc.createdBy
+    }, (char) &#x3D;&gt; {
+        if (!char) {
+            console.log(&#x60;Unable to find a character with id [${doc.createdBy}]&#x60;);
+            return;
+        }
+        let owner &#x3D; char;
+
+        let business &#x3D; {
+            name: doc.name,
+            type: doc.type,
+            note: doc.note,
+            roles: [{
+                name: config.ownerRole
+            }]
+        }
+
+        MRP_SERVER.create(&#x27;business&#x27;, business, (r) &#x3D;&gt; {
+            if (r.insertedId) {
+                console.log(&#x60;Created business ${business.name}&#x60;);
+                emit(&#x27;mrp:employment:server:addEmployment&#x27;, source, char.stateId, r.insertedId, config.ownerRole);
+            }
+        });
+    });
+})
+
+/**
+ * Approve document event
+ * @event MRP_SERVER.business#mrp:business:server:approve
+ * @type {object}
+ * @property {Document} doc      document to approve
+ * @property {Item} item         item to approve and remove after
+ */
+onNet(&#x27;mrp:business:server:approve&#x27;, (source, doc, item) &#x3D;&gt; {
+    console.log(&#x60;Approve document ${JSON.stringify(doc)}&#x60;);
+    let approver &#x3D; MRP_SERVER.getSpawnedCharacter(source);
+
+    data.approvedBy &#x3D; approver._id;
+    data.approvedAt &#x3D; Date.now();
+    MRP_SERVER.update(&#x27;document&#x27;, data, {
+        _id: data._id
+    }, null, (r) &#x3D;&gt; {
+        console.log(&#x27;Approved business proposal document&#x27;);
+        emit(&#x27;mrp:inventory:server:RemoveItem&#x27;, &#x27;businessproposal&#x27;, 1, item.slot, {});
+
+        emit(&#x27;mrp:business:server:create&#x27;, source, doc);
+
+        emitNet(&#x27;chat:addMessage&#x27;, source, {
+            template: &#x27;&amp;lt;div class&#x3D;&quot;chat-message nonemergency&quot;&gt;{0}&amp;lt;/div&gt;&#x27;,
+            args: [
+                locale.documentApproved
+            ]
+        });
+    });
+});</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>

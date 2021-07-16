@@ -62,8 +62,13 @@ MRP_SERVER.employment &#x3D; {
     findEmployement(data, business, role) {
         let employment;
         for (let emp of data.employment) {
-            if (emp.business &#x3D;&#x3D; business &amp;amp;&amp;amp; emp.role &#x3D;&#x3D; role)
-                employment &#x3D; emp;
+            if (typeof business &#x3D;&#x3D; &#x27;string&#x27;) {
+                if (emp.business &#x3D;&#x3D; business &amp;amp;&amp;amp; emp.role &#x3D;&#x3D; role)
+                    employment &#x3D; emp;
+            } else {
+                if (MRP_SERVER.isObjectIDEqual(emp.business, business) &amp;amp;&amp;amp; emp.role &#x3D;&#x3D; role)
+                    employment &#x3D; emp;
+            }
         }
         return employment;
     },
@@ -71,6 +76,7 @@ MRP_SERVER.employment &#x3D; {
     /**
      * removeEmployment - description    
      *      
+     * @fires MRP_CLIENT.employment#mrp:employment:client:setEmployment
      * @memberof MRP_SERVER.employment
      * @param  {type} source     description     
      * @param  {type} stateId    description     
@@ -153,6 +159,13 @@ MRP_SERVER.employment &#x3D; {
                                 if (result.upsertedId)
                                     data._id &#x3D; result.upsertedId;
 
+                                emitNet(&#x27;chat:addMessage&#x27;, src, {
+                                    template: &#x27;&amp;lt;div class&#x3D;&quot;chat-message nonemergency&quot;&gt;{0}&amp;lt;/div&gt;&#x27;,
+                                    args: [
+                                        locale.roleRemove.replace(&#x27;${stateId}&#x27;, stateId).replace(&#x27;${jobName}&#x27;, jobName)
+                                    ]
+                                });
+
                                 emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, data);
                             }
                         }
@@ -165,6 +178,7 @@ MRP_SERVER.employment &#x3D; {
     /**    
      * addEmployment - description    
      * 
+     * @fires MRP_CLIENT.employment#mrp:employment:client:setEmployment
      * @memberof MRP_SERVER.employment     
      * @param  {type} source     description     
      * @param  {type} stateId    description     
@@ -248,6 +262,13 @@ MRP_SERVER.employment &#x3D; {
                                 if (result.upsertedId)
                                     data._id &#x3D; result.upsertedId;
 
+                                emitNet(&#x27;chat:addMessage&#x27;, src, {
+                                    template: &#x27;&amp;lt;div class&#x3D;&quot;chat-message nonemergency&quot;&gt;{0}&amp;lt;/div&gt;&#x27;,
+                                    args: [
+                                        locale.roleAdded.replace(&#x27;${stateId}&#x27;, stateId).replace(&#x27;${jobName}&#x27;, jobName)
+                                    ]
+                                });
+
                                 emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, data);
                             }
                         }
@@ -282,6 +303,12 @@ RegisterCommand(&#x27;bl&#x27;, (source, args) &#x3D;&gt; {
     MRP_SERVER.employment.removeEmployment(source, stateId, &#x27;city&#x27;, jobName); //not sure if we only allow city whitelist for now
 }, true);
 
+/**
+ * Get employment for a character
+ * @event MRP_SERVER.employment#mrp:employment:server:getEmployment
+ * @type {object}
+ * @property {ID} charId      character ID to get data for
+ */
 onNet(&#x27;mrp:employment:server:getEmployment&#x27;, (source, charId, uuid) &#x3D;&gt; {
     MRP_SERVER.read(&#x27;employment&#x27;, {
         char: charId
@@ -290,6 +317,24 @@ onNet(&#x27;mrp:employment:server:getEmployment&#x27;, (source, charId, uuid) &#
     });
 });
 
+/**
+ * Add employment for a character
+ * @event MRP_SERVER.employment#mrp:employment:server:addEmployment
+ * @type {object}
+ * @property {int} stateId              stateId of the character
+ * @property {ObjectID} businessId      id of the business
+ * @property {string} jobName           role/job name
+ */
+onNet(&#x27;mrp:employment:server:addEmployment&#x27;, (source, stateId, businessId, jobName) &#x3D;&gt; {
+    MRP_SERVER.employment.addEmployment(source, stateId, businessId, jobName);
+});
+
+/**
+ * Get shared object
+ * @event MRP_SERVER.employment#mrp:employment:getSharedObject
+ * @type {object}
+ * @property {function} callback      function with the shared object as argument
+ */
 on(&#x27;mrp:employment:getSharedObject&#x27;, (cb) &#x3D;&gt; {
     cb(MRP_SERVER);
 });</code></pre>

@@ -60,6 +60,32 @@
                 </div>
               </div>
             </div>
+            <div class="summary-callout">
+              <h2 class="summary-callout-heading">Events</h2>
+              <div class="summary-content">
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:getSharedObject">mrp:employment:getSharedObject</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:addEmployment">mrp:employment:server:addEmployment</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+                <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:getEmployment">mrp:employment:server:getEmployment</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
           </section>
           <section>
             <h2>Methods</h2>
@@ -139,6 +165,8 @@
                 </table>
               </section>
               <dl class="dl-compact">
+                <dt>Fires</dt>
+                <dd><a href="MRP_CLIENT.employment.html#event:mrp:employment:client:setEmployment">MRP_CLIENT.employment#mrp:employment:client:setEmployment</a></dd>
                 <dt>Returns</dt>
                 <dd>
                   <p><code>type</code> description</p>
@@ -285,10 +313,145 @@
                 </table>
               </section>
               <dl class="dl-compact">
+                <dt>Fires</dt>
+                <dd><a href="MRP_CLIENT.employment.html#event:mrp:employment:client:setEmployment">MRP_CLIENT.employment#mrp:employment:client:setEmployment</a></dd>
                 <dt>Returns</dt>
                 <dd>
                   <p><code>type</code> description</p>
                 </dd>
+              </dl>
+            </section>
+            <h2>Events</h2>
+            <section>
+              <h3 id="event:mrp:employment:getSharedObject"><span class="symbol-name">mrp:employment:getSharedObject</span><small class="property-type">
+                  &nbsp;object</small></h3>
+              <p>Get shared object</p>
+              <section>
+                <h4>Property</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>callback</p>
+                      </td>
+                      <td>
+                        <p>function()</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>function with the shared object as argument</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+              </dl>
+              <h3 id="event:mrp:employment:server:addEmployment"><span class="symbol-name">mrp:employment:server:addEmployment</span><small class="property-type">
+                  &nbsp;object</small></h3>
+              <p>Add employment for a character</p>
+              <section>
+                <h4>Properties</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>stateId</p>
+                      </td>
+                      <td>
+                        <p>int</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>stateId of the character</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>businessId</p>
+                      </td>
+                      <td>
+                        <p>ObjectID</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>id of the business</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>jobName</p>
+                      </td>
+                      <td>
+                        <p>string</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>role/job name</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+              </dl>
+              <h3 id="event:mrp:employment:server:getEmployment"><span class="symbol-name">mrp:employment:server:getEmployment</span><small class="property-type">
+                  &nbsp;object</small></h3>
+              <p>Get employment for a character</p>
+              <section>
+                <h4>Property</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>charId</p>
+                      </td>
+                      <td>
+                        <p>ID</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>character ID to get data for</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
               </dl>
             </section>
           </section>

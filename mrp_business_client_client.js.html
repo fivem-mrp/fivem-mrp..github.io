@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc 3.6.7">
+  <meta charset="utf-8">
+  <title>Source: mrp_business/client/client.js</title>
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_business/client/client.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>/**
+ * need to have module mrp_business loaded
+ * 
+ * @memberof MRP_CLIENT
+ * @namespace business
+ */
+
+MRP_CLIENT &#x3D; null;
+
+emit(&#x27;mrp:employment:getSharedObject&#x27;, obj &#x3D;&gt; MRP_CLIENT &#x3D; obj);
+
+while (MRP_CLIENT &#x3D;&#x3D; null) {
+    print(&#x27;Waiting for shared object....&#x27;);
+}
+
+let localeConvar &#x3D; GetConvar(&quot;mrp_locale&quot;, &quot;en&quot;);
+
+eval(LoadResourceFile(&#x27;mrp_core&#x27;, &#x27;client/helpers.js&#x27;));
+
+configFile &#x3D; LoadResourceFile(GetCurrentResourceName(), &#x27;config/config.json&#x27;);
+
+config &#x3D; JSON.parse(configFile);
+
+locale &#x3D; config.locale[localeConvar];
+
+if (config.showBlips) {
+    MRP_CLIENT.addBlips(config.locations);
+}
+
+let viewItem &#x3D; null;
+
+on(&#x27;onClientResourceStart&#x27;, (name) &#x3D;&gt; {
+    if (name !&#x3D; GetCurrentResourceName())
+        return;
+
+    for (let location of config.locations) {
+        MRP_CLIENT.spawnSharedNPC({
+            model: location.ped,
+            x: location.x,
+            y: location.y,
+            z: location.z,
+            heading: location.heading
+        });
+    }
+});
+
+setInterval(() &#x3D;&gt; {
+    for (let location of config.locations) {
+        let ped &#x3D; PlayerPedId();
+        let modelHash &#x3D; GetHashKey(location.shopkeeperPed);
+        if (MRP_CLIENT.isNearLocation(ped, location.x, location.y, location.z) &amp;amp;&amp;amp; MRP_CLIENT.isPedNearCoords(location.x, location.y, location.z, null, modelHash)) {
+            //check if looking at shop keeper
+            let pedInFront &#x3D; MRP_CLIENT.getPedInFront();
+            if (pedInFront &gt; 0) {
+                emit(&#x27;mrp:thirdeye:addMenuItem&#x27;, {
+                    locationId: location.id,
+                    id: &#x27;cityhall&#x27;,
+                    text: locale.file,
+                    action: &#x27;https://mrp_business/openFileForm&#x27;
+                });
+            } else {
+                currentLocation &#x3D; null;
+                emit(&#x27;mrp:thirdeye:removeMenuItem&#x27;, {
+                    id: &#x27;cityhall&#x27;
+                });
+            }
+        }
+    }
+}, 0);
+
+/**
+ * View document event
+ * @event MRP_CLIENT.business#mrp:business:client:view
+ * @type {object}
+ * @property {Document} doc      document to view
+ * @property {Item} item         inventory item to view
+ */
+onNet(&#x27;mrp:business:client:view&#x27;, (doc, item) &#x3D;&gt; {
+    MRP_CLIENT.setPlayerMetadata(&quot;inMenu&quot;, true);
+
+    viewItem &#x3D; item;
+
+    let canApprove &#x3D; MRP_CLIENT.employment.hasRole(MRP_CLIENT.employment.CITY, MRP_CLIENT.employment.ROLE_JUDGE) ||
+        MRP_CLIENT.employment.hasRole(MRP_CLIENT.employment.CITY, MRP_CLIENT.employment.ROLE_MAYOR);
+
+    SetNuiFocus(true, true);
+    SendNuiMessage(JSON.stringify({
+        type: &#x27;view&#x27;,
+        doc: doc,
+        canApprove: canApprove,
+        char: MRP_CLIENT.GetPlayerData()
+    }));
+});
+
+RegisterNuiCallbackType(&#x27;openFileForm&#x27;);
+on(&#x27;__cfx_nui:openFileForm&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+
+    viewItem &#x3D; null;
+
+    console.log(&#x27;Open file form&#x27;);
+    MRP_CLIENT.setPlayerMetadata(&quot;inMenu&quot;, true);
+
+    SetNuiFocus(true, true);
+    SendNuiMessage(JSON.stringify({
+        type: &#x27;show&#x27;,
+        char: MRP_CLIENT.GetPlayerData()
+    }));
+});
+
+RegisterNuiCallbackType(&#x27;close&#x27;);
+on(&#x27;__cfx_nui:close&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+
+    viewItem &#x3D; null;
+
+    SetNuiFocus(false, false);
+    MRP_CLIENT.setPlayerMetadata(&quot;inMenu&quot;, false);
+    let ped &#x3D; PlayerPedId();
+    ClearPedTasks(ped);
+    MRP_CLIENT.clearProps();
+});
+
+RegisterNuiCallbackType(&#x27;approve&#x27;);
+on(&#x27;__cfx_nui:approve&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+
+    SetNuiFocus(false, false);
+    MRP_CLIENT.setPlayerMetadata(&quot;inMenu&quot;, false);
+    let ped &#x3D; PlayerPedId();
+    ClearPedTasks(ped);
+    MRP_CLIENT.clearProps();
+
+    emitNet(&#x27;mrp:business:server:approve&#x27;, GetPlayerServerId(PlayerId()), data, viewItem);
+
+    viewItem &#x3D; null;
+});
+
+let docData &#x3D; null;
+RegisterNuiCallbackType(&#x27;printForm&#x27;);
+on(&#x27;__cfx_nui:printForm&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+
+    SetNuiFocus(false, false);
+    MRP_CLIENT.setPlayerMetadata(&quot;inMenu&quot;, false);
+
+    console.log(&#x60;Print business proposal with data ${JSON.stringify(data)}&#x60;);
+
+    let char &#x3D; MRP_CLIENT.GetPlayerData();
+
+    if (char.stats.cash &amp;lt; config.businessProposalPrice) {
+        emitNet(&#x27;chat:addMessage&#x27;, source, {
+            color: [255, 255, 255],
+            multiline: true,
+            args: [locale.business_proposal_poor_no_money.replace(&#x27;${business_proposal_cost}&#x27;, config.businessProposalPrice)]
+        });
+        return;
+    }
+
+    docData &#x3D; data;
+
+    emit(&#x27;mrp:popup&#x27;, {
+        message: locale.business_proposal_pay.replace(&#x27;${business_proposal_cost}&#x27;, config.businessProposalPrice),
+        actions: [{
+            text: locale.ok,
+            url: &#x27;https://mrp_business/business_proposal_pay&#x27;
+        }, {
+            text: locale.cancel,
+            url: &#x27;https://mrp_business/business_proposal_cancel&#x27;
+        }]
+    });
+});
+
+RegisterNuiCallbackType(&#x27;business_proposal_pay&#x27;);
+on(&#x27;__cfx_nui:business_proposal_pay&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+    emitNet(&#x27;mrp:business:server:createDocument&#x27;, GetPlayerServerId(PlayerId()), docData);
+});
+
+RegisterNuiCallbackType(&#x27;business_proposal_cancel&#x27;);
+on(&#x27;__cfx_nui:business_proposal_cancel&#x27;, (data, cb) &#x3D;&gt; {
+    cb({});
+    docData &#x3D; null;
+    viewItem &#x3D; null;
+});</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>

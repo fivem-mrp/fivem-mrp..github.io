@@ -1,0 +1,261 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="generator" content="JSDoc 3.6.7">
+  <meta charset="utf-8">
+  <title>Source: mrp_core/server/commands.js</title>
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Karla:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Noto+Serif:400,400i,700,700i" type="text/css">
+  <link rel="stylesheet" href="https://brick.a.ssl.fastly.net/Inconsolata:500" type="text/css">
+  <link href="css/baseline.css" rel="stylesheet">
+</head>
+
+<body onload="prettyPrint()">
+  <nav id="jsdoc-navbar" role="navigation" class="jsdoc-navbar">
+    <div id="jsdoc-navbar-container">
+      <div id="jsdoc-navbar-content">
+        <a href="index.html" class="jsdoc-navbar-package-name">Home</a>
+      </div>
+    </div>
+  </nav>
+  <div id="jsdoc-body-container">
+    <div id="jsdoc-content">
+      <div id="jsdoc-content-container">
+        <div id="jsdoc-banner" role="banner">
+        </div>
+        <div id="jsdoc-main" role="main">
+          <header class="page-header">
+            <h1>Source: mrp_core/server/commands.js</h1>
+          </header>
+          <article>
+            <pre class="prettyprint linenums"><code>const config &#x3D; require(&#x27;../config/default.json&#x27;);
+
+const db &#x3D; require(&#x27;./db.js&#x27;);
+require(&#x27;../shared/debug.js&#x27;);
+const logger &#x3D; mrp_logger;
+
+const rawConsoleColor &#x3D; config.console.system.color;
+let RGB_ARRAY &#x3D; rawConsoleColor.split(&#x27;,&#x27;);
+//convert to numbers
+for (let i in RGB_ARRAY) {
+    RGB_ARRAY[i] &#x3D; parseInt(RGB_ARRAY[i]);
+}
+
+RegisterCommand(&#x27;users&#x27;, (source, args, rawCommand) &#x3D;&gt; {
+    let users &#x3D; MRP.getConnectedUsers();
+
+    let playerName &#x3D; GetPlayerName(source);
+
+    let msg &#x3D; &quot;&quot;;
+
+    for (let id in users) {
+        msg +&#x3D; users[id].name + &quot;, &quot;;
+    }
+
+    msg &#x3D; msg.slice(0, -2);
+
+    emitNet(&#x27;chat:addMessage&#x27;, source, {
+        color: RGB_ARRAY,
+        multiline: true,
+        args: [&#x27;Connected users&#x27;, msg]
+    });
+}, false);
+
+RegisterCommand(&#x27;createCharacter&#x27;, (source, args, cmd) &#x3D;&gt; {
+    let execute &#x3D; async function() {
+        let player &#x3D; await MRP.getPlayer(source);
+
+        if (player) {
+            // args &#x3D; name surname;
+            let name &#x3D; args[0];
+            let surname &#x3D; args[1];
+
+            emit(&#x27;mrp:createCharacter&#x27;, player, {
+                name,
+                surname
+            });
+        } else {
+            logger.log(&#x60;Player doesn&#x27;t exist in database!&#x60;);
+        }
+    };
+
+    execute();
+});
+
+RegisterCommand(&#x27;listCharacters&#x27;, (source, args, cmd) &#x3D;&gt; {
+    let execute &#x3D; async function() {
+        let characters &#x3D; await MRP.getCharacters(source);
+
+        if (characters &amp;amp;&amp;amp; characters.length &gt; 0) {
+            let chatList &#x3D; &quot;&quot;;
+            for (let char of characters) {
+                chatList +&#x3D; &#x60;[${char._id} - ${char.name} ${char.surname}] &#x60;;
+            }
+
+            emitNet(&#x27;chat:addMessage&#x27;, source, {
+                color: RGB_ARRAY,
+                multiline: true,
+                args: [&#x27;Characters&#x27;, chatList]
+            });
+        } else {
+            emitNet(&#x27;chat:addMessage&#x27;, source, {
+                color: RGB_ARRAY,
+                multiline: true,
+                args: [&#x27;Characters&#x27;, &quot;no characters&quot;]
+            });
+        }
+    };
+
+    execute();
+});
+
+/**
+ * Character spawn event
+ * @event MRP_CLIENT#mrp:spawn
+ * @type {object}
+ * @property {Character} char      spawned character
+ * @property {Location} spawn      spawn location
+ */
+RegisterCommand(&#x27;useCharacter&#x27;, (source, args, cmd) &#x3D;&gt; {
+    let execute &#x3D; async function() {
+        let characters &#x3D; await MRP.getCharacters(source);
+
+        // args &#x3D; name surname;
+        let name &#x3D; args[0];
+        let surname &#x3D; args[1];
+
+        if (!name || !surname) {
+            emitNet(&#x27;chat:addMessage&#x27;, source, {
+                color: RGB_ARRAY,
+                multiline: true,
+                args: [&#x27;Use charcater&#x27;, &quot;Missing parameter requires Name Surname&quot;]
+            });
+            return;
+        }
+
+        if (characters &amp;amp;&amp;amp; characters.length &gt; 0) {
+            let characterToUse &#x3D; null;
+            for (let char of characters) {
+                if (char.name &#x3D;&#x3D; name &amp;amp;&amp;amp; char.surname &#x3D;&#x3D; surname) {
+                    characterToUse &#x3D; char;
+                    break;
+                }
+            }
+
+            if (characterToUse &#x3D;&#x3D; null) {
+                emitNet(&#x27;chat:addMessage&#x27;, source, {
+                    color: RGB_ARRAY,
+                    multiline: true,
+                    args: [&#x27;Use charcater&#x27;, &quot;Didn&#x27;t find the specified character by name and surname&quot;]
+                });
+            } else {
+                characterToUse.entityID &#x3D; ENTITIES++;
+                let update &#x3D; async function() {
+                    let updatedUser &#x3D; await MRP.setLastUsedCharacter(source, characterToUse);
+                    let users &#x3D; MRP.getConnectedUsers();
+                    users[updatedUser._id] &#x3D; updatedUser;
+                };
+                update();
+                let spawnPoint &#x3D; {};
+                Object.assign(spawnPoint, config.spawnPoints[0]);
+                spawnPoint.model &#x3D; characterToUse.model;
+                MRP.playerSpawnedCharacters[source] &#x3D; characterToUse;
+                emitNet(&#x27;mrp:spawn&#x27;, source, characterToUse, spawnPoint);
+                emit(&#x27;mrp:spawn&#x27;, source, characterToUse, spawnPoint);
+            }
+        } else {
+            emitNet(&#x27;chat:addMessage&#x27;, source, {
+                color: RGB_ARRAY,
+                multiline: true,
+                args: [&#x27;Use charcater&#x27;, &quot;no characters&quot;]
+            });
+        }
+    };
+
+    execute();
+});
+
+RegisterCommand(&#x27;pos&#x27;, (source, args, cmd) &#x3D;&gt; {
+    let pos &#x3D; MRP.getEntityPosition(source);
+    if (pos &amp;amp;&amp;amp; pos.length &gt;&#x3D; 4) {
+        let [posX, posY, posZ, posHeading] &#x3D; pos;
+        let msg &#x3D; &#x60;Heading: ${posHeading} | x: ${posX} | y: ${posY} | z: ${posZ}&#x60;;
+        emitNet(&#x27;chat:addMessage&#x27;, source, {
+            color: RGB_ARRAY,
+            multiline: true,
+            args: [&#x27;[Obtain Position]&#x27;, msg]
+        });
+    }
+});
+
+RegisterCommand(&#x27;respawn&#x27;, (source) &#x3D;&gt; {
+    emitNet(&#x27;mrp:spawn&#x27;, source);
+});
+
+RegisterCommand(&#x27;revive&#x27;, (source) &#x3D;&gt; {
+    emitNet(&#x27;mrp:revive&#x27;, source);
+});
+
+RegisterCommand(&#x27;addHunger&#x27;, (source, args) &#x3D;&gt; {
+    let [modifier] &#x3D; args;
+    modifier &#x3D; parseInt(modifier);
+    emitNet(&#x27;mrp:addHunger&#x27;, source, modifier);
+});
+
+RegisterCommand(&#x27;addThirst&#x27;, (source, args) &#x3D;&gt; {
+    let [modifier] &#x3D; args;
+    modifier &#x3D; parseInt(modifier);
+    emitNet(&#x27;mrp:addThirst&#x27;, source, modifier);
+});
+
+RegisterCommand(&#x27;addStress&#x27;, (source, args) &#x3D;&gt; {
+    let [modifier] &#x3D; args;
+    modifier &#x3D; parseInt(modifier);
+    emitNet(&#x27;mrp:addStress&#x27;, source, modifier);
+});
+
+RegisterCommand(&#x27;addArmor&#x27;, (source, args) &#x3D;&gt; {
+    let [modifier] &#x3D; args;
+    modifier &#x3D; parseInt(modifier);
+    emitNet(&#x27;mrp:addArmor&#x27;, source, modifier);
+});
+
+RegisterCommand(&#x27;addHealth&#x27;, (source, args) &#x3D;&gt; {
+    let [modifier] &#x3D; args;
+    modifier &#x3D; parseInt(modifier);
+    emitNet(&#x27;mrp:addHealth&#x27;, source, modifier);
+});
+
+RegisterCommand(&#x27;stateId&#x27;, (source) &#x3D;&gt; {
+    let char &#x3D; MRP.getSpawnedCharacter(source);
+    if (char) {
+        emitNet(&#x27;chat:addMessage&#x27;, source, {
+            color: [255, 255, 255],
+            multiline: true,
+            args: [&#x60;Your state ID is: ${char.stateId}&#x60;]
+        });
+    }
+});</code></pre>
+          </article>
+        </div>
+      </div>
+      <nav id="jsdoc-toc-nav" role="navigation"></nav>
+    </div>
+  </div>
+  <footer id="jsdoc-footer" class="jsdoc-footer">
+    <div id="jsdoc-footer-container">
+      <p>
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 16, 2021.
+      </p>
+    </div>
+  </footer>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/tree.jquery.js"></script>
+  <script src="scripts/prettify.js"></script>
+  <script src="scripts/jsdoc-toc.js"></script>
+  <script src="scripts/linenumber.js"></script>
+  <script src="scripts/scrollanchor.js"></script>
+</body>
+
+</html>
