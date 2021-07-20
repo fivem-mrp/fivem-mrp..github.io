@@ -26,7 +26,7 @@
           <header class="page-header">
             <div class="symbol-detail-labels"><span class="label label-kind">namespace</span>&nbsp;<span class="label label-static">static</span></div>
             <h1><small><a href="MRP_SERVER.html">MRP_SERVER</a>.<wbr></small><span class="symbol-name">employment</span></h1>
-            <p class="source-link">Source: <a href="mrp_employment_server_server.js.html#source-line-45">mrp_employment/<wbr>server/<wbr>server.<wbr>js:45</a></p>
+            <p class="source-link">Source: <a href="mrp_employment_server_server.js.html#source-line-51">mrp_employment/<wbr>server/<wbr>server.<wbr>js:51</a></p>
             <div class="symbol-description">
               <p>need to have module mrp_employment loaded</p>
             </div>
@@ -65,25 +65,30 @@
               <div class="summary-content">
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
-                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:getSharedObject">mrp:employment:getSharedObject</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#event:'mrp:employment:server:removeEmployment">'mrp:employment:server:removeEmployment</a></dt>
                     <dd>
                     </dd>
-                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:addEmployment">mrp:employment:server:addEmployment</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:getSharedObject">mrp:employment:getSharedObject</a></dt>
                     <dd>
                     </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
-                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:getEmployees">mrp:employment:server:getEmployees</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:addEmployment">mrp:employment:server:addEmployment</a></dt>
                     <dd>
                     </dd>
-                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:getEmployment">mrp:employment:server:getEmployment</a></dt>
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:getEmployees">mrp:employment:server:getEmployees</a></dt>
                     <dd>
                     </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
+                  <dl class="dl-summary-callout">
+                    <dt><a href="MRP_SERVER.employment.html#event:mrp:employment:server:getEmployment">mrp:employment:server:getEmployment</a></dt>
+                    <dd>
+                    </dd>
+                  </dl>
                 </div>
               </div>
             </div>
@@ -324,6 +329,68 @@
             </section>
             <h2>Events</h2>
             <section>
+              <h3 id="event:%27mrp:employment:server:removeEmployment"><span class="symbol-name">&#x27;mrp:employment:server:removeEmployment</span><small class="property-type">
+                  &nbsp;object</small></h3>
+              <p>Remove/Fire employment for a character</p>
+              <section>
+                <h4>Properties</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>stateId</p>
+                      </td>
+                      <td>
+                        <p>int</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>stateId of the character</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>businessId</p>
+                      </td>
+                      <td>
+                        <p><a href="ObjectID.html">ObjectID</a></p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>id of the business</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>jobName</p>
+                      </td>
+                      <td>
+                        <p>string</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>role/job name</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+              </dl>
               <h3 id="event:mrp:employment:getSharedObject"><span class="symbol-name">mrp:employment:getSharedObject</span><small class="property-type">
                   &nbsp;object</small></h3>
               <p>Get shared object</p>
@@ -498,7 +565,7 @@
   <footer id="jsdoc-footer" class="jsdoc-footer">
     <div id="jsdoc-footer-container">
       <p>
-        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 17, 2021.
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 20, 2021.
       </p>
     </div>
   </footer>

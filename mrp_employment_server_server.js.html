@@ -43,6 +43,12 @@ while (MRP_SERVER &#x3D;&#x3D; null) {
 }
 
 function sendEmployment(src, data) {
+    if (!data || !data._id) {
+        console.log(&#x27;No data recieved to get employment for&#x27;);
+        emitNet(&#x27;mrp:employment:client:setEmployment&#x27;, src, null);
+        return;
+    }
+
     const agg &#x3D; [{
         &#x27;$match&#x27;: {
             &#x27;_id&#x27;: data._id
@@ -169,7 +175,7 @@ MRP_SERVER.employment &#x3D; {
                     if (data._id)
                         query._id &#x3D; data._id;
 
-                    MRP_SERVER.update(&#x27;employment&#x27;, data, query, null, (result) &#x3D;&gt; {
+                    let postUpdate &#x3D; function(result) {
                         if (result.modifiedCount &gt; 0) {
                             console.log(&#x60;Updated employment for state ID [${stateId}] with job name [${jobName}]&#x60;);
                         } else {
@@ -182,6 +188,8 @@ MRP_SERVER.employment &#x3D; {
                                 locale.blSuccess.replace(&#x27;${stateId}&#x27;, stateId).replace(&#x27;${jobName}&#x27;, jobName)
                             ]
                         });
+
+                        emitNet(&#x27;mrp:employment:server:employmentChanged&#x27;, source, result);
 
                         let allChars &#x3D; MRP_SERVER.getSpawnedCharacters();
                         for (let src in allChars) {
@@ -200,6 +208,10 @@ MRP_SERVER.employment &#x3D; {
                                 sendEmployment(src, data);
                             }
                         }
+                    };
+
+                    MRP_SERVER.update(&#x27;employment&#x27;, data, query, null, (result) &#x3D;&gt; {
+                        postUpdate(result);
                     });
                 }
             });
@@ -260,20 +272,32 @@ MRP_SERVER.employment &#x3D; {
                     }
 
                     needUpdate &#x3D; true;
-                    data.employment.push({
-                        business: businessId,
-                        role: jobName
-                    });
+                    if (typeof business &#x3D;&#x3D; &#x27;string&#x27;) {
+                        //allow multiple jobs for type like &quot;city&quot;
+                        data.employment.push({
+                            business: businessId,
+                            role: jobName
+                        });
+                    } else {
+                        job &#x3D; MRP_SERVER.employment.findEmployement(data, businessId, null);
+                        if (job) {
+                            //replace previous job role
+                            job.business &#x3D; businessId;
+                            job.role &#x3D; jobName;
+                        } else {
+                            data.employment.push({
+                                business: businessId,
+                                role: jobName
+                            });
+                        }
+                    }
                 }
 
                 if (needUpdate) {
                     let query &#x3D; {};
 
-                    if (data._id)
-                        query._id &#x3D; data._id;
-
-                    MRP_SERVER.update(&#x27;employment&#x27;, data, query, null, (result) &#x3D;&gt; {
-                        if (result.modifiedCount &gt; 0) {
+                    let postAdd &#x3D; function(result) {
+                        if (result.modifiedCount &amp;amp;&amp;amp; result.modifiedCount &gt; 0) {
                             console.log(&#x60;Updated employment for state ID [${stateId}] with job name [${jobName}]&#x60;);
                         } else {
                             console.log(&#x60;Added employment for state ID [${stateId}] with job name [${jobName}]&#x60;);
@@ -286,12 +310,16 @@ MRP_SERVER.employment &#x3D; {
                             ]
                         });
 
+                        emitNet(&#x27;mrp:employment:server:employmentChanged&#x27;, source, result);
+
                         let allChars &#x3D; MRP_SERVER.getSpawnedCharacters();
                         for (let src in allChars) {
                             let spawnedChar &#x3D; allChars[src];
                             if (MRP_SERVER.isObjectIDEqual(spawnedChar._id, char._id)) {
                                 if (result.upsertedId)
                                     data._id &#x3D; result.upsertedId;
+                                if (result.insertedId)
+                                    data._id &#x3D; result.insertedId;
 
                                 emitNet(&#x27;chat:addMessage&#x27;, src, {
                                     template: &#x27;&amp;lt;div class&#x3D;&quot;chat-message nonemergency&quot;&gt;{0}&amp;lt;/div&gt;&#x27;,
@@ -303,7 +331,18 @@ MRP_SERVER.employment &#x3D; {
                                 sendEmployment(src, data);
                             }
                         }
-                    });
+                    };
+
+                    if (data._id) {
+                        query._id &#x3D; data._id;
+                        MRP_SERVER.update(&#x27;employment&#x27;, data, query, null, (result) &#x3D;&gt; {
+                            postAdd(result);
+                        });
+                    } else {
+                        MRP_SERVER.create(&#x27;employment&#x27;, data, (result) &#x3D;&gt; {
+                            postAdd(result);
+                        });
+                    }
                 }
             });
         });
@@ -426,6 +465,18 @@ onNet(&#x27;mrp:employment:server:addEmployment&#x27;, (source, stateId, busines
 });
 
 /**
+ * Remove/Fire employment for a character
+ * @event MRP_SERVER.employment#&#x27;mrp:employment:server:removeEmployment
+ * @type {object}
+ * @property {int} stateId              stateId of the character
+ * @property {ObjectID} businessId      id of the business
+ * @property {string} jobName           role/job name
+ */
+onNet(&#x27;mrp:employment:server:removeEmployment&#x27;, (source, stateId, businessId, jobName) &#x3D;&gt; {
+    MRP_SERVER.employment.removeEmployment(source, stateId, businessId, jobName);
+});
+
+/**
  * Get shared object
  * @event MRP_SERVER.employment#mrp:employment:getSharedObject
  * @type {object}
@@ -443,7 +494,7 @@ on(&#x27;mrp:employment:getSharedObject&#x27;, (cb) &#x3D;&gt; {
   <footer id="jsdoc-footer" class="jsdoc-footer">
     <div id="jsdoc-footer-container">
       <p>
-        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 17, 2021.
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 20, 2021.
       </p>
     </div>
   </footer>
