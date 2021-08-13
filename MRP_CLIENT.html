@@ -62,6 +62,9 @@
                     <dt><a href="MRP_CLIENT.html#.addBlips">addBlips(blips)</a></dt>
                     <dd>
                     </dd>
+                    <dt><a href="MRP_CLIENT.html#.createProp">createProp(prop, propBone, propPlacement)</a></dt>
+                    <dd>
+                    </dd>
                     <dt><a href="MRP_CLIENT.html#.CreateThread">CreateThread(callback)</a></dt>
                     <dd>
                     </dd>
@@ -77,13 +80,13 @@
                     <dt><a href="MRP_CLIENT.html#.getPedInFront">getPedInFront()</a></dt>
                     <dd>
                     </dd>
-                    <dt><a href="MRP_CLIENT.html#.GetPlayerData">GetPlayerData()</a></dt>
-                    <dd>
-                    </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
+                    <dt><a href="MRP_CLIENT.html#.GetPlayerData">GetPlayerData()</a></dt>
+                    <dd>
+                    </dd>
                     <dt><a href="MRP_CLIENT.html#.getPlayerMetadata">getPlayerMetadata(name)</a></dt>
                     <dd>
                     </dd>
@@ -102,20 +105,20 @@
                     <dt><a href="MRP_CLIENT.html#.Notification">Notification(text, duration)</a></dt>
                     <dd>
                     </dd>
-                    <dt><a href="MRP_CLIENT.html#.RandomString">RandomString()</a></dt>
-                    <dd>
-                    </dd>
                   </dl>
                 </div>
                 <div class="summary-column">
                   <dl class="dl-summary-callout">
+                    <dt><a href="MRP_CLIENT.html#.RandomString">RandomString()</a></dt>
+                    <dd>
+                    </dd>
                     <dt><a href="MRP_CLIENT.html#.setPlayerMetadata">setPlayerMetadata(name, state)</a></dt>
                     <dd>
                     </dd>
                     <dt><a href="MRP_CLIENT.html#.sleep">sleep(ms)</a></dt>
                     <dd>
                     </dd>
-                    <dt><a href="MRP_CLIENT.html#.spawnSharedNPC">spawnSharedNPC(opt)</a></dt>
+                    <dt><a href="MRP_CLIENT.html#.spawnSharedNPC">spawnSharedNPC(opt, cb)</a></dt>
                     <dd>
                     </dd>
                     <dt><a href="MRP_CLIENT.html#.TriggerServerCallback">TriggerServerCallback(event, args, callback)</a></dt>
@@ -189,6 +192,79 @@
                 <dt>Returns</dt>
                 <dd>
                   <p><code>type</code> description</p>
+                </dd>
+              </dl>
+              <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
+              <h3 id=".createProp"><span class="symbol-name">createProp</span><span class="signature"><span class="signature-params">(prop, propBone, propPlacement)</span>&nbsp;&rarr; <span class="signature-returns"> int</span></span></h3>
+              <p>createProp - description</p>
+              <section>
+                <h4>Parameters</h4>
+                <table class="jsdoc-details-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Optional</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p>prop</p>
+                      </td>
+                      <td>
+                        <p>string</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>model hash</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>propBone</p>
+                      </td>
+                      <td>
+                        <p>int</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>bone ID</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>propPlacement</p>
+                      </td>
+                      <td>
+                        <p>object</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>{
+                          xPos: 0.025,
+                          yPos: 0.08,
+                          zPos: 0.255,
+                          xRot: -145.0,
+                          yRot: 290.0,
+                          zRot: 0.0
+                          }</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+              <dl class="dl-compact">
+                <dt>Returns</dt>
+                <dd>
+                  <p><code>int</code> prop ID</p>
                 </dd>
               </dl>
               <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
@@ -811,7 +887,7 @@
                 </dd>
               </dl>
               <div class="symbol-detail-labels"><span class="label label-static">static</span></div>
-              <h3 id=".spawnSharedNPC"><span class="symbol-name">spawnSharedNPC</span><span class="signature"><span class="signature-params">(opt)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
+              <h3 id=".spawnSharedNPC"><span class="symbol-name">spawnSharedNPC</span><span class="signature"><span class="signature-params">(opt, cb)</span>&nbsp;&rarr; <span class="signature-returns"> type</span></span></h3>
               <p>spawnSharedNPC - {
                 model: &quot;a_f_m_ktown_02&quot;,
                 x: 0,
@@ -820,7 +896,7 @@
                 heading: 0
                 }</p>
               <section>
-                <h4>Parameter</h4>
+                <h4>Parameters</h4>
                 <table class="jsdoc-details-table">
                   <thead>
                     <tr>
@@ -843,6 +919,20 @@
                       </td>
                       <td>
                         <p>options as described above</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>cb</p>
+                      </td>
+                      <td>
+                        <p>function()</p>
+                      </td>
+                      <td>
+                        <p>&nbsp;</p>
+                      </td>
+                      <td>
+                        <p>callback after done</p>
                       </td>
                     </tr>
                   </tbody>
@@ -1019,7 +1109,7 @@
   <footer id="jsdoc-footer" class="jsdoc-footer">
     <div id="jsdoc-footer-container">
       <p>
-        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on July 20, 2021.
+        Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc</a> 3.6.7 on August 13, 2021.
       </p>
     </div>
   </footer>
